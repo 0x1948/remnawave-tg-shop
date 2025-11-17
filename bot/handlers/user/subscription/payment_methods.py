@@ -330,7 +330,16 @@ async def payment_method_view(callback: types.CallbackQuery, settings: Settings,
 
     title = _format_pm_title(billing.card_network, billing.card_last4)
     details = f"{title}\n{_('payment_method_added_at', date=added_at)}\n{_('payment_method_last_tx', date=last_tx)}"
-    await callback.message.edit_text(details, reply_markup=get_payment_method_details_keyboard(billing.yookassa_payment_method_id, current_lang, i18n))
+    if settings.PHOTO_ID_PAY_METHOD:
+        await callback.message.edit_media(
+            media=InputMediaPhoto(
+                media=settings.PHOTO_ID_PAY_METHOD,
+                caption=details
+            ),
+            reply_markup=get_payment_method_details_keyboard(billing.yookassa_payment_method_id, current_lang, i18n)
+        )
+    else:
+        await callback.message.edit_text(details, reply_markup=get_payment_method_details_keyboard(billing.yookassa_payment_method_id, current_lang, i18n))
     try:
         await callback.answer()
     except Exception:
