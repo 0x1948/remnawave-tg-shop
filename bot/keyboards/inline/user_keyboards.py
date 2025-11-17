@@ -236,11 +236,11 @@ def get_subscription_options_keyboard(subscription_options: Dict[
             if price is not None:
                 button_text = _("subscribe_for_months_button",
                                 months=months,
-                                price=price,
+                                price=int(price),
                                 currency_symbol=currency_symbol_val)
                 builder.button(text=button_text,
                                callback_data=f"subscribe_period:{months}")
-        builder.adjust(1)
+        builder.adjust(2)
     builder.row(
         InlineKeyboardButton(text=_(key="back_to_main_menu_button"),
                              callback_data="main_action:back_to_main"))
@@ -425,6 +425,21 @@ def get_user_banned_keyboard(support_link: Optional[str], lang: str,
     builder = InlineKeyboardBuilder()
     builder.button(text=_(key="menu_support_button"), url=support_link)
     return builder.as_markup()
+
+def get_trial_text_keyboard(lang: str, i18n_instance) -> InlineKeyboardMarkup:
+    _ = lambda key, **kwargs: i18n_instance.gettext(lang, key, **kwargs)
+
+    builder = InlineKeyboardBuilder()
+
+    builder.button(text=_(key="pay_button"), callback_data="pay_yk:1:1.0")
+
+    builder.button(
+        text=_("back_to_main_menu_button"),
+        callback_data="main_action:back_to_main"
+    )
+
+    return builder.as_markup()
+
 
 
 def get_channel_subscription_keyboard(
