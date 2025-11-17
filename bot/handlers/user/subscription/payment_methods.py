@@ -104,7 +104,17 @@ async def payment_method_bind(callback: types.CallbackQuery, settings: Settings,
     if not resp or not resp.get("confirmation_url"):
         await callback.answer(_("error_payment_gateway"), show_alert=True)
         return
-    await callback.message.edit_text(_("payment_methods_title"), reply_markup=get_bind_url_keyboard(resp["confirmation_url"], current_lang, i18n))
+
+    if settings.PHOTO_ID_PAY_METHOD:
+        await callback.message.edit_media(
+            media=InputMediaPhoto(
+                media=settings.PHOTO_ID_PAY_METHOD,
+                caption=_("payment_methods_title")
+            ),
+            reply_markup=get_bind_url_keyboard(resp["confirmation_url"], current_lang, i18n)
+        )
+    else:
+        await callback.message.edit_text(_("payment_methods_title"), reply_markup=get_bind_url_keyboard(resp["confirmation_url"], current_lang, i18n))
     try:
         await callback.answer()
     except Exception:
