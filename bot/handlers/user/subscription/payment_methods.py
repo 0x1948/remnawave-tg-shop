@@ -135,7 +135,16 @@ async def payment_method_delete_confirm(callback: types.CallbackQuery, settings:
     _ = lambda key, **kwargs: i18n.gettext(current_lang, key, **kwargs) if i18n else key
     parts = callback.data.split(":", 2)
     pm_id = parts[2] if len(parts) >= 3 else ""
-    await callback.message.edit_text(_("payment_method_delete_confirm"), reply_markup=get_payment_method_delete_confirm_keyboard(pm_id, current_lang, i18n))
+    if settings.PHOTO_ID_PAY_METHOD:
+        await callback.message.edit_media(
+            media=InputMediaPhoto(
+                media=settings.PHOTO_ID_PAY_METHOD,
+                caption=_("payment_method_delete_confirm")
+            ),
+            reply_markup=get_payment_method_delete_confirm_keyboard(pm_id, current_lang, i18n)
+        )
+    else:
+        await callback.message.edit_text(_("payment_method_delete_confirm"), reply_markup=get_payment_method_delete_confirm_keyboard(pm_id, current_lang, i18n))
     try:
         await callback.answer()
     except Exception:
@@ -202,7 +211,16 @@ async def payment_method_delete(callback: types.CallbackQuery, settings: Setting
         if not cards:
             text += "\n\n" + _("payment_method_none")
         msg = _("payment_method_deleted_success") if deleted else _("error_try_again")
-        await callback.message.edit_text(f"{msg}\n\n{text}", reply_markup=get_payment_methods_list_keyboard(cards, 0, current_lang, i18n))
+        if settings.PHOTO_ID_PAY_METHOD:
+            await callback.message.edit_media(
+                media=InputMediaPhoto(
+                    media=settings.PHOTO_ID_PAY_METHOD,
+                    caption=f"{msg}\n\n{text}"
+                ),
+                reply_markup=get_payment_methods_list_keyboard(cards, 0, current_lang, i18n)
+            )
+        else:
+            await callback.message.edit_text(f"{msg}\n\n{text}", reply_markup=get_payment_methods_list_keyboard(cards, 0, current_lang, i18n))
         try:
             await callback.answer()
         except Exception:
@@ -281,7 +299,16 @@ async def payment_method_view(callback: types.CallbackQuery, settings: Settings,
         except Exception:
             pass
         details = f"{title}\n{_('payment_method_added_at', date=added_at)}\n{_('payment_method_last_tx', date=last_tx)}"
-        await callback.message.edit_text(details, reply_markup=get_payment_method_details_keyboard(str(sel.method_id), current_lang, i18n))
+        if settings.PHOTO_ID_PAY_METHOD:
+            await callback.message.edit_media(
+                media=InputMediaPhoto(
+                    media=settings.PHOTO_ID_PAY_METHOD,
+                    caption=details
+                ),
+                reply_markup=get_payment_method_details_keyboard(str(sel.method_id), current_lang, i18n)
+            )
+        else:
+            await callback.message.edit_text(details, reply_markup=get_payment_method_details_keyboard(str(sel.method_id), current_lang, i18n))
         try:
             await callback.answer()
         except Exception:
@@ -412,7 +439,16 @@ async def payment_method_history(callback: types.CallbackQuery, settings: Settin
             if back_pm_id
             else get_payment_methods_manage_keyboard(current_lang, i18n, has_card=True)
         )
-        await callback.message.edit_text(_("payment_method_no_history"), reply_markup=back_markup)
+        if settings.PHOTO_ID_PAY_METHOD:
+            await callback.message.edit_media(
+                media=InputMediaPhoto(
+                    media=settings.PHOTO_ID_PAY_METHOD,
+                    caption=_("payment_method_no_history")
+                ),
+                reply_markup=back_markup
+            )
+        else:
+            await callback.message.edit_text(_("payment_method_no_history"), reply_markup=back_markup)
         return
 
     def _format_item(p: Payment) -> str:
@@ -432,7 +468,16 @@ async def payment_method_history(callback: types.CallbackQuery, settings: Settin
         if split_pm_id_for_back
         else get_payment_methods_manage_keyboard(current_lang, i18n, has_card=True)
     )
-    await callback.message.edit_text(text, reply_markup=back_markup)
+    if settings.PHOTO_ID_PAY_METHOD:
+        await callback.message.edit_media(
+            media=InputMediaPhoto(
+                media=settings.PHOTO_ID_PAY_METHOD,
+                caption=text
+            ),
+            reply_markup=back_markup
+        )
+    else:
+        await callback.message.edit_text(text, reply_markup=back_markup)
 
 
 @router.callback_query(F.data.startswith("pm:list:"))
@@ -474,7 +519,16 @@ async def payment_methods_list(callback: types.CallbackQuery, settings: Settings
     text = get_text("payment_methods_title")
     if not cards:
         text += "\n\n" + get_text("payment_method_none")
-    await callback.message.edit_text(text, reply_markup=get_payment_methods_list_keyboard(cards, page, current_lang, i18n))
+    if settings.PHOTO_ID_PAY_METHOD:
+        await callback.message.edit_media(
+            media=InputMediaPhoto(
+                media=settings.PHOTO_ID_PAY_METHOD,
+                caption=text
+            ),
+            reply_markup=get_payment_methods_list_keyboard(cards, page, current_lang, i18n)
+        )
+    else:
+        await callback.message.edit_text(text, reply_markup=get_payment_methods_list_keyboard(cards, page, current_lang, i18n))
     try:
         await callback.answer()
     except Exception:
