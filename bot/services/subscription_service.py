@@ -866,6 +866,7 @@ class SubscriptionService:
             payment_method_id=default_pm.provider_payment_method_id,
             save_payment_method=False,
             capture=True,
+            need_confirm=False
         )
         if not resp or resp.get("status") not in {"pending", "waiting_for_capture", "succeeded"}:
             logging.error(f"Auto-renew create_payment failed: {resp}")
