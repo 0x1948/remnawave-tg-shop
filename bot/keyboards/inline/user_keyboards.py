@@ -431,7 +431,7 @@ def get_trial_text_keyboard(lang: str, i18n_instance) -> InlineKeyboardMarkup:
 
     builder = InlineKeyboardBuilder()
 
-    builder.button(text=_(key="pay_button"), callback_data="pay_yk:1:1.0")
+    builder.button(text=_(key="pay_button"), callback_data="pay_yk_new:1:1.0")
 
     builder.button(
         text=_("back_to_main_menu_button"),
