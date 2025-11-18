@@ -65,7 +65,8 @@ class YooKassaService:
             save_payment_method: bool = False,
             payment_method_id: Optional[str] = None,
             capture: bool = True,
-            bind_only: bool = False) -> Optional[Dict[str, Any]]:
+            bind_only: bool = False,
+            need_confirm: bool = True) -> Optional[Dict[str, Any]]:
         if not self.configured:
             logging.error("YooKassa is not configured. Cannot create payment.")
             return None
@@ -111,10 +112,11 @@ class YooKassaService:
                 capture = False
                 amount = max(amount, 1.00)
             builder.set_capture(capture)
-            builder.set_confirmation({
-                "type": ConfirmationType.REDIRECT,
-                "return_url": self.return_url
-            })
+            if need_confirm:
+                builder.set_confirmation({
+                    "type": ConfirmationType.REDIRECT,
+                    "return_url": self.return_url
+                })
             builder.set_description(description)
             builder.set_metadata(metadata)
             if save_payment_method:
