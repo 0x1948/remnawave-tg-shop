@@ -185,28 +185,6 @@ class PanelWebhookService:
 
         if event_name in EVENT_MAP:
             days_left, msg_key = EVENT_MAP[event_name]
-            if days_left == 1:
-                # Trigger auto-renew via SubscriptionService (wired in at factory)
-                try:
-                    subscription_service = getattr(self, "subscription_service", None)
-                    if subscription_service:
-                        async with self.async_session_factory() as session:
-                            from db.dal import subscription_dal
-                            sub = await subscription_dal.get_active_subscription_by_user_id(session, user_id)
-                            if sub and sub.auto_renew_enabled and sub.provider != 'tribute':
-                                try:
-                                    ok = await subscription_service.charge_subscription_renewal(session, sub)
-                                    # If initiation succeeded, suppress the 24h reminder by returning early
-                                    if ok:
-                                        await session.commit()
-                                        return
-                                    else:
-                                        await session.rollback()
-                                except Exception:
-                                    await session.rollback()
-                                    logging.exception("Auto-renew attempt (24h) failed")
-                except Exception:
-                    logging.exception("Auto-renew trigger (24h) failed pre-check")
             if days_left <= self.settings.SUBSCRIPTION_NOTIFY_DAYS_BEFORE:
                 # For 48h event, if auto-renew is enabled and not tribute, show special notice with cancel button
                 if days_left == 2:
@@ -239,6 +217,27 @@ class PanelWebhookService:
                     end_date=user_payload.get("expireAt", "")[:10],
                 )
         elif event_name == "user.expired":
+            try:
+                subscription_service = getattr(self, "subscription_service", None)
+                if subscription_service:
+                    async with self.async_session_factory() as session:
+                        from db.dal import subscription_dal
+                        sub = await subscription_dal.get_active_subscription_by_user_id(session, user_id)
+                        if sub and sub.auto_renew_enabled and sub.provider != 'tribute':
+                            try:
+                                ok = await subscription_service.charge_subscription_renewal(session, sub)
+                                # If initiation succeeded, suppress the 24h reminder by returning early
+                                if ok:
+                                    await session.commit()
+                                    return
+                                else:
+                                    await session.rollback()
+                            except Exception:
+                                await session.rollback()
+                                logging.exception("Auto-renew attempt (24h) failed")
+            except Exception:
+                logging.exception("Auto-renew trigger (24h) failed pre-check")
+
             # Check if this is a tribute user that should be auto-renewed (regardless of notification settings)
             auto_renewed = await self._handle_expired_subscription(session, user_id, user_payload, lang, markup, first_name)
             
