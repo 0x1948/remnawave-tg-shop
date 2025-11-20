@@ -112,7 +112,7 @@ class YooKassaService:
                 capture = False
                 amount = max(amount, 1.00)
             builder.set_capture(capture)
-            if need_confirm:
+            if need_confirm or not payment_method_id:
                 builder.set_confirmation({
                     "type": ConfirmationType.REDIRECT,
                     "return_url": self.return_url
