@@ -305,10 +305,19 @@ async def _initiate_yk_payment(
 
         message_text = get_text("yookassa_autopay_charge_initiated")
         try:
-            await callback.message.edit_text(
-                message_text,
-                reply_markup=get_back_to_main_menu_markup(current_lang, i18n),
-            )
+            if settings.PHOTO_ID_RUS_PAY:
+                await callback.message.edit_media(
+                    media=InputMediaPhoto(
+                        media=settings.PHOTO_ID_RUS_PAY,
+                        caption=message_text
+                    ),
+                    reply_markup=get_back_to_main_menu_markup(current_lang, i18n)
+                )
+            else:
+                await callback.message.edit_text(
+                    message_text,
+                    reply_markup=get_back_to_main_menu_markup(current_lang, i18n),
+                )
         except Exception as e_edit:
             logging.warning(f"Failed to notify about saved-card charge start: {e_edit}")
             try:
@@ -728,17 +737,33 @@ async def pay_yk_saved_list_handler(callback: types.CallbackQuery, settings: Set
     page = max(0, min(page, max_page))
 
     try:
-        await callback.message.edit_text(
-            get_text("yookassa_autopay_choose_saved_card"),
-            reply_markup=get_yk_saved_cards_keyboard(
-                cards,
-                months,
-                price_rub,
-                current_lang,
-                i18n,
-                page=page,
-            ),
-        )
+        if settings.PHOTO_ID_PAY_METHOD:
+            await callback.message.edit_media(
+                media=InputMediaPhoto(
+                    media=settings.PHOTO_ID_PAY_METHOD,
+                    caption=get_text("yookassa_autopay_choose_saved_card"),
+                ),
+                reply_markup=get_yk_saved_cards_keyboard(
+                    cards,
+                    months,
+                    price_rub,
+                    current_lang,
+                    i18n,
+                    page=page,
+                ),
+            )
+        else:
+            await callback.message.edit_text(
+                get_text("yookassa_autopay_choose_saved_card"),
+                reply_markup=get_yk_saved_cards_keyboard(
+                    cards,
+                    months,
+                    price_rub,
+                    current_lang,
+                    i18n,
+                    page=page,
+                ),
+            )
     except Exception as e_edit:
         logging.warning(f"Failed to display saved card list: {e_edit}")
         try:
