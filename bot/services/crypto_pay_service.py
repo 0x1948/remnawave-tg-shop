@@ -63,7 +63,7 @@ class CryptoPayService:
         months: int,
         amount: float,
         description: str,
-    ) -> Optional[str]:
+    ):
         if not self.configured or not self.client:
             logging.error("CryptoPayService not configured")
             return None
@@ -119,7 +119,7 @@ class CryptoPayService:
                     exc_info=True,
                 )
                 return None
-            return invoice.bot_invoice_url
+            return invoice.bot_invoice_url, str(invoice.invoice_id)
         except Exception as e:
             logging.error(f"CryptoPay invoice creation failed: {e}", exc_info=True)
             return None

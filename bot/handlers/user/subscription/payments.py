@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from aiogram import Router, F, types
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, InputMediaPhoto
 from typing import Optional, List, Tuple
@@ -30,6 +30,28 @@ def _parse_months_and_price(payload: str) -> Optional[Tuple[int, float]]:
     except (ValueError, IndexError):
         return None
 
+def add_months(start: date, months: int) -> date:
+    new_year = start.year + (start.month - 1 + months) // 12
+    new_month = (start.month - 1 + months) % 12 + 1
+
+    if new_month == 12:
+        next_month_year = new_year + 1
+        next_month = 1
+    else:
+        next_month_year = new_year
+        next_month = new_month + 1
+
+    last_day_of_new_month = date(next_month_year, next_month, 1) - timedelta(days=1)
+
+    new_day = min(start.day, last_day_of_new_month.day)
+
+    return date(new_year, new_month, new_day)
+
+def calc_months_forward(months: int):
+    start = date.today()
+    end = add_months(start, months)
+    days_diff = (end - start).days
+    return end, days_diff
 
 def _format_saved_payment_method_title(get_text, network: Optional[str], last4: Optional[str], is_default: bool) -> str:
     def _is_yoomoney_network(name: Optional[str]) -> bool:
@@ -201,12 +223,14 @@ async def _initiate_yk_payment(
                 pass
             return False
 
+        end_date, total_days = calc_months_forward(months)
+
         try:
             if settings.PHOTO_ID_PAY_CREATED:
                 await callback.message.edit_media(
                     media=InputMediaPhoto(
                         media=settings.PHOTO_ID_PAY_CREATED,
-                        caption=get_text(key="payment_link_message", months=months),
+                        caption=get_text(key="payment_link_message_yookassa", price=price_rub, date=end_date, period=total_days, num_pay=db_payment_record.payment_id),
                     ),
                     reply_markup=get_payment_url_keyboard(
                         payment_response_yk["confirmation_url"],
@@ -219,7 +243,7 @@ async def _initiate_yk_payment(
                 )
             else:
                 await callback.message.edit_text(
-                    get_text(key="payment_link_message", months=months),
+                    get_text(key="payment_link_message_yookassa", price=price_rub, date=end_date, period=total_days, num_pay=db_payment_record.payment_id),
                     reply_markup=get_payment_url_keyboard(
                         payment_response_yk["confirmation_url"],
                         current_lang,
@@ -235,7 +259,7 @@ async def _initiate_yk_payment(
             )
             try:
                 await callback.message.answer(
-                    get_text(key="payment_link_message", months=months),
+                    get_text(key="payment_link_message_yookassa", price=price_rub, date=end_date, period=total_days, num_pay=db_payment_record.payment_id),
                     reply_markup=get_payment_url_keyboard(
                         payment_response_yk["confirmation_url"],
                         current_lang,
@@ -1083,7 +1107,7 @@ async def pay_crypto_callback_handler(
     user_id = callback.from_user.id
     payment_description = get_text("payment_description_subscription", months=months)
 
-    invoice_url = await cryptopay_service.create_invoice(
+    invoice_url, payment_id = await cryptopay_service.create_invoice(
         session=session,
         user_id=user_id,
         months=months,
@@ -1091,13 +1115,15 @@ async def pay_crypto_callback_handler(
         description=payment_description,
     )
 
+    end_date, total_days = calc_months_forward(months)
+
     if invoice_url:
         try:
             if settings.PHOTO_ID_PAY_CREATED:
                 await callback.message.edit_media(
                     media=InputMediaPhoto(
                         media=settings.PHOTO_ID_PAY_CREATED,
-                        caption=get_text(key="payment_link_message", months=months),
+                        caption=get_text(key="payment_link_message_crypto", price=price_amount, date=end_date, period=total_days, num_pay=payment_id),
                     ),
                     reply_markup=get_payment_url_keyboard(
                         invoice_url,
@@ -1110,7 +1136,7 @@ async def pay_crypto_callback_handler(
                 )
             else:
                 await callback.message.edit_text(
-                    get_text(key="payment_link_message", months=months),
+                    get_text(key="payment_link_message_crypto", price=price_amount, date=end_date, period=total_days, num_pay=payment_id),
                     reply_markup=get_payment_url_keyboard(
                         invoice_url,
                         current_lang,
@@ -1123,7 +1149,7 @@ async def pay_crypto_callback_handler(
         except Exception:
             try:
                 await callback.message.answer(
-                    get_text(key="payment_link_message", months=months),
+                    get_text(key="payment_link_message_crypto", price=price_amount, date=end_date, period=total_days, num_pay=payment_id),
                     reply_markup=get_payment_url_keyboard(
                         invoice_url,
                         current_lang,
@@ -1186,8 +1212,10 @@ async def pay_stars_callback_handler(
             pass
         return
 
+    end_date, total_days = calc_months_forward(months)
+
     user_id = callback.from_user.id
-    payment_description = get_text("payment_description_subscription", months=months)
+    payment_description = get_text("payment_link_message_stars", price=stars_price, date=end_date, period=total_days)
 
     payment_db_id = await stars_service.create_invoice(
         session=session,
@@ -1199,15 +1227,29 @@ async def pay_stars_callback_handler(
 
     if payment_db_id:
         try:
-            await callback.message.edit_text(
-                get_text("payment_invoice_sent_message", months=months),
-                reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-                    [InlineKeyboardButton(
-                        text=get_text("back_to_payment_methods_button"),
-                        callback_data=f"subscribe_period:{months}",
-                    )]
-                ]),
-            )
+            if settings.PHOTO_ID_PAY_CREATED:
+                await callback.message.edit_media(
+                    media=InputMediaPhoto(
+                        media=settings.PHOTO_ID_PAY_CREATED,
+                        caption=get_text("payment_invoice_sent_message", months=months)
+                    ),
+                    reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+                        [InlineKeyboardButton(
+                            text=get_text("back_to_payment_methods_button"),
+                            callback_data=f"subscribe_period:{months}",
+                        )]
+                    ])
+                )
+            else:
+                await callback.message.edit_text(
+                    get_text("payment_invoice_sent_message", months=months),
+                    reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+                        [InlineKeyboardButton(
+                            text=get_text("back_to_payment_methods_button"),
+                            callback_data=f"subscribe_period:{months}",
+                        )]
+                    ]),
+                )
         except Exception as e_edit:
             logging.warning(f"Stars payment: failed to show invoice info message ({e_edit})")
         try:
