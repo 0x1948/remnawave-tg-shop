@@ -230,7 +230,7 @@ async def _initiate_yk_payment(
                 await callback.message.edit_media(
                     media=InputMediaPhoto(
                         media=settings.PHOTO_ID_PAY_CREATED,
-                        caption=get_text(key="payment_link_message_yookassa", price=price_rub, date=end_date, period=total_days, num_pay=db_payment_record.payment_id),
+                        caption=get_text(key="payment_link_message_yookassa", price=int(price_rub), date=end_date, period=total_days, num_pay=db_payment_record.payment_id),
                     ),
                     reply_markup=get_payment_url_keyboard(
                         payment_response_yk["confirmation_url"],
@@ -243,7 +243,7 @@ async def _initiate_yk_payment(
                 )
             else:
                 await callback.message.edit_text(
-                    get_text(key="payment_link_message_yookassa", price=price_rub, date=end_date, period=total_days, num_pay=db_payment_record.payment_id),
+                    get_text(key="payment_link_message_yookassa", price=int(price_rub), date=end_date, period=total_days, num_pay=db_payment_record.payment_id),
                     reply_markup=get_payment_url_keyboard(
                         payment_response_yk["confirmation_url"],
                         current_lang,
@@ -259,7 +259,7 @@ async def _initiate_yk_payment(
             )
             try:
                 await callback.message.answer(
-                    get_text(key="payment_link_message_yookassa", price=price_rub, date=end_date, period=total_days, num_pay=db_payment_record.payment_id),
+                    get_text(key="payment_link_message_yookassa", price=int(price_rub), date=end_date, period=total_days, num_pay=db_payment_record.payment_id),
                     reply_markup=get_payment_url_keyboard(
                         payment_response_yk["confirmation_url"],
                         current_lang,
@@ -1123,7 +1123,7 @@ async def pay_crypto_callback_handler(
                 await callback.message.edit_media(
                     media=InputMediaPhoto(
                         media=settings.PHOTO_ID_PAY_CREATED,
-                        caption=get_text(key="payment_link_message_crypto", price=price_amount, date=end_date, period=total_days, num_pay=payment_id),
+                        caption=get_text(key="payment_link_message_crypto", price=int(price_amount), date=end_date, period=total_days, num_pay=payment_id),
                     ),
                     reply_markup=get_payment_url_keyboard(
                         invoice_url,
@@ -1136,7 +1136,7 @@ async def pay_crypto_callback_handler(
                 )
             else:
                 await callback.message.edit_text(
-                    get_text(key="payment_link_message_crypto", price=price_amount, date=end_date, period=total_days, num_pay=payment_id),
+                    get_text(key="payment_link_message_crypto", price=int(price_amount), date=end_date, period=total_days, num_pay=payment_id),
                     reply_markup=get_payment_url_keyboard(
                         invoice_url,
                         current_lang,
@@ -1149,7 +1149,7 @@ async def pay_crypto_callback_handler(
         except Exception:
             try:
                 await callback.message.answer(
-                    get_text(key="payment_link_message_crypto", price=price_amount, date=end_date, period=total_days, num_pay=payment_id),
+                    get_text(key="payment_link_message_crypto", price=int(price_amount), date=end_date, period=total_days, num_pay=payment_id),
                     reply_markup=get_payment_url_keyboard(
                         invoice_url,
                         current_lang,
