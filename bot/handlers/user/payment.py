@@ -334,11 +334,10 @@ async def process_cancelled_payment(session: AsyncSession, bot: Bot,
                                     payment_info_from_webhook: dict,
                                     i18n: JsonI18n, settings: Settings):
 
-    logging.info(payment_info_from_webhook)
-
     metadata = payment_info_from_webhook.get("metadata", {})
     user_id_str = metadata.get("user_id")
     payment_db_id_str = metadata.get("payment_db_id")
+    cancellation_details = payment_info_from_webhook.get('cancellation_details')
 
     if not user_id_str or not payment_db_id_str:
         logging.warning(
@@ -376,6 +375,9 @@ async def process_cancelled_payment(session: AsyncSession, bot: Bot,
         _ = lambda key, **kwargs: i18n.gettext(user_lang, key, **kwargs)
         await bot.send_message(user_id, _("payment_failed"))
 
+        if cancellation_details.get('reason'):
+            await bot.send_message(user_id, f"Причина: {cancellation_details['reason']}.\nЭто означает, что ты НИЩИЙ. \n\n\n\nАХАХАХАХАХАХХАХАХАХАХАХАХАХА ХАХАХАХА")
+
     except Exception as e_process_cancel:
         logging.error(
             f"Error processing cancelled payment for user {user_id}, payment_db_id {payment_db_id}: {e_process_cancel}",
@@ -408,10 +410,6 @@ async def yookassa_webhook_route(request: web.Request):
 
         notification_object = WebhookNotification(event_json)
         payment_data_from_notification = notification_object.object
-
-        print(dict(payment_data_from_notification))
-
-        print(dict(payment_data_from_notification.cancellation_details))
 
         logging.info(
             f"YooKassa Webhook Parsed: Event='{notification_object.event}', "
@@ -477,6 +475,7 @@ async def yookassa_webhook_route(request: web.Request):
             str(payment_data_from_notification.description)
             if payment_data_from_notification.description else None,
             "payment_method": pm_dict,
+            "cancellation_details": dict(payment_data_from_notification.cancellation_details)
         }
 
         async with payment_processing_lock:

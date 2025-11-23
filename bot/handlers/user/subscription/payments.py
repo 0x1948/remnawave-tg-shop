@@ -670,16 +670,31 @@ async def pay_yk_saved_list_handler(callback: types.CallbackQuery, settings: Set
 
     if not saved_methods:
         try:
-            await callback.message.edit_text(
-                get_text("yookassa_autopay_no_saved_cards"),
-                reply_markup=get_yk_autopay_choice_keyboard(
-                    months,
-                    price_rub,
-                    current_lang,
-                    i18n,
-                    has_saved_cards=False,
-                ),
-            )
+            if settings.PHOTO_ID_PAY_METHOD:
+                await callback.message.edit_media(
+                    media=InputMediaPhoto(
+                        media=settings.PHOTO_ID_PAY_METHOD,
+                        caption=get_text("yookassa_autopay_no_saved_cards"),
+                    ),
+                    reply_markup=get_yk_autopay_choice_keyboard(
+                        months,
+                        price_rub,
+                        current_lang,
+                        i18n,
+                        has_saved_cards=False,
+                    ),
+                )
+            else:
+                await callback.message.edit_text(
+                    get_text("yookassa_autopay_no_saved_cards"),
+                    reply_markup=get_yk_autopay_choice_keyboard(
+                        months,
+                        price_rub,
+                        current_lang,
+                        i18n,
+                        has_saved_cards=False,
+                    ),
+                )
         except Exception as e_edit:
             logging.warning(f"Failed to display no-saved-card notice: {e_edit}")
             try:
