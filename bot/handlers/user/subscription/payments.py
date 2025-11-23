@@ -1222,7 +1222,7 @@ async def pay_stars_callback_handler(
         user_id=user_id,
         months=months,
         stars_price=stars_price,
-        title=get_text("payment_description_subscription"),
+        title=get_text("payment_description_subscription", months=months),
         description=payment_description
     )
 
