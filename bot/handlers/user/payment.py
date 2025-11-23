@@ -409,6 +409,10 @@ async def yookassa_webhook_route(request: web.Request):
         notification_object = WebhookNotification(event_json)
         payment_data_from_notification = notification_object.object
 
+        print(payment_data_from_notification)
+
+        print(payment_data_from_notification.cancellation_details)
+
         logging.info(
             f"YooKassa Webhook Parsed: Event='{notification_object.event}', "
             f"PaymentId='{payment_data_from_notification.id}', Status='{payment_data_from_notification.status}'"
