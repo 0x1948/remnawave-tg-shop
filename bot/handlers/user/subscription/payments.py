@@ -1231,7 +1231,7 @@ async def pay_stars_callback_handler(
             if settings.settings.PHOTO_ID_STARS_PAY:
                 await callback.message.edit_media(
                     media=InputMediaPhoto(
-                        media=settings.settings.PHOTO_ID_STARS_PAY,
+                        media=settings.PHOTO_ID_STARS_PAY,
                         caption=get_text("payment_invoice_sent_message", months=months)
                     ),
                     reply_markup=InlineKeyboardMarkup(inline_keyboard=[
