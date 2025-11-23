@@ -26,7 +26,7 @@ class StarsService:
         self.referral_service = referral_service
 
     async def create_invoice(self, session: AsyncSession, user_id: int, months: int,
-                             stars_price: int, description: str) -> Optional[int]:
+                             stars_price: int, title: str, description: str) -> Optional[int]:
         payment_record_data = {
             "user_id": user_id,
             "amount": float(stars_price),
@@ -51,7 +51,7 @@ class StarsService:
         try:
             await self.bot.send_invoice(
                 chat_id=user_id,
-                title=description,
+                title=title,
                 description=description,
                 payload=payload,
                 provider_token="",
