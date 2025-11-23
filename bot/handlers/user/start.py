@@ -253,8 +253,8 @@ async def send_help_text(event: Union[types.Message, types.CallbackQuery], i18n_
 
     text = get_text(key="menu_help_text")
     keyboard = (
-        get_channel_subscription_keyboard(
-            current_lang, i18n, settings.REQUIRED_CHANNEL_LINK
+        get_help_keyboard(
+            current_lang, i18n, settings
         )
         if i18n
         else None
@@ -272,9 +272,9 @@ async def send_help_text(event: Union[types.Message, types.CallbackQuery], i18n_
     if isinstance(event, types.CallbackQuery):
         try:
             if settings.PHOTO_ID_PM_ME:
-                await target_message_obj.edit_media(media=InputMediaPhoto(media=settings.PHOTO_ID_PM_ME, caption=text), reply_markup=get_help_keyboard, disable_web_page_preview=True)
+                await target_message_obj.edit_media(media=InputMediaPhoto(media=settings.PHOTO_ID_PM_ME, caption=text), reply_markup=keyboard, disable_web_page_preview=True)
             else:
-                await target_message_obj.edit_text(text=text, reply_markup=get_help_keyboard, disable_web_page_preview=True)
+                await target_message_obj.edit_text(text=text, reply_markup=keyboard, disable_web_page_preview=True)
         except Exception as e:
             print(repr(e))
         try:
