@@ -18,7 +18,8 @@ from bot.keyboards.inline.user_keyboards import (
     get_main_start_inline_keyboard,
     get_language_selection_keyboard,
     get_channel_subscription_keyboard,
-    get_trial_text_keyboard
+    get_trial_text_keyboard,
+    get_help_keyboard
 )
 from bot.services.subscription_service import SubscriptionService
 from bot.services.panel_api_service import PanelApiService
@@ -224,6 +225,56 @@ async def send_bonus_text(event: Union[types.Message, types.CallbackQuery], i18n
                 await target_message_obj.edit_media(media=InputMediaPhoto(media=settings.PHOTO_ID_GET_BONUS, caption=text), reply_markup=keyboard, disable_web_page_preview=True)
             else:
                 await target_message_obj.edit_text(text=text, reply_markup=keyboard, disable_web_page_preview=True)
+        except Exception as e:
+            print(repr(e))
+        try:
+            await event.answer()
+        except Exception as e:
+            print(repr(e))
+    else:
+        pass
+
+async def send_help_text(event: Union[types.Message, types.CallbackQuery], i18n_data: dict, settings: Settings, session: AsyncSession):
+    current_lang = i18n_data.get("current_language", settings.DEFAULT_LANGUAGE)
+    i18n: Optional[JsonI18n] = i18n_data.get("i18n_instance")
+    get_text = lambda key, **kwargs: i18n.gettext(current_lang, key, **kwargs) if i18n else key
+
+    if not i18n:
+        err_msg = "Language service error."
+        print(err_msg)
+        if isinstance(event, types.CallbackQuery):
+            try:
+                await event.answer(err_msg, show_alert=True)
+            except Exception:
+                pass
+        elif isinstance(event, types.Message):
+            await event.answer(err_msg)
+        return
+
+    text = get_text(key="menu_help_text")
+    keyboard = (
+        get_channel_subscription_keyboard(
+            current_lang, i18n, settings.REQUIRED_CHANNEL_LINK
+        )
+        if i18n
+        else None
+    )
+
+    target_message_obj = event.message if isinstance(event, types.CallbackQuery) else event
+    if not target_message_obj:
+        if isinstance(event, types.CallbackQuery):
+            try:
+                await event.answer(get_text("error_occurred_try_again"), show_alert=True)
+            except Exception as e:
+                pass
+        return
+
+    if isinstance(event, types.CallbackQuery):
+        try:
+            if settings.PHOTO_ID_PM_ME:
+                await target_message_obj.edit_media(media=InputMediaPhoto(media=settings.PHOTO_ID_PM_ME, caption=text), reply_markup=get_help_keyboard, disable_web_page_preview=True)
+            else:
+                await target_message_obj.edit_text(text=text, reply_markup=get_help_keyboard, disable_web_page_preview=True)
         except Exception as e:
             print(repr(e))
         try:
@@ -852,6 +903,8 @@ async def main_action_callback_handler(
         await user_subscription_handlers.my_devices_command_handler(
             callback, i18n_data, settings, panel_service, subscription_service,
             session, bot)
+    elif action == "help":
+        await send_help_text(callback, i18n_data, settings, session)
     elif action == "get_bonus":
         await send_bonus_text(callback, i18n_data, settings, session)
     elif action == "terms":
