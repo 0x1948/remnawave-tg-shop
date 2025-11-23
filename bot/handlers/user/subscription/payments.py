@@ -1228,7 +1228,7 @@ async def pay_stars_callback_handler(
 
     if payment_db_id:
         try:
-            if settings.settings.PHOTO_ID_STARS_PAY:
+            if settings.PHOTO_ID_STARS_PAY:
                 await callback.message.edit_media(
                     media=InputMediaPhoto(
                         media=settings.PHOTO_ID_STARS_PAY,
