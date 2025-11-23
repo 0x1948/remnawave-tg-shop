@@ -478,6 +478,10 @@ async def send_terms_text(event: Union[types.Message, types.CallbackQuery], i18n
     else:
         pass
 
+@router.message(F.photo)
+async def djfjdf(message: types.Message):
+    print(message.photo[-1])
+
 @router.message(CommandStart())
 @router.message(CommandStart(magic=F.args.regexp(r"^ref_(\d+)$").as_("ref_match")))
 @router.message(CommandStart(magic=F.args.regexp(r"^promo_(\w+)$").as_("promo_match")))
