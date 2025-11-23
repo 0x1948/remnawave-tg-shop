@@ -230,7 +230,7 @@ async def _initiate_yk_payment(
                 await callback.message.edit_media(
                     media=InputMediaPhoto(
                         media=settings.PHOTO_ID_PAY_CREATED,
-                        caption=get_text(key="payment_link_message_yookassa", price=int(price_rub), date=end_date, period=total_days, num_pay=db_payment_record.payment_id),
+                        caption=get_text(key="payment_link_message_yookassa", price=int(price_rub), date=end_date, period=total_days, num_pay=payment_response_yk.get('id')),
                     ),
                     reply_markup=get_payment_url_keyboard(
                         payment_response_yk["confirmation_url"],
@@ -239,11 +239,11 @@ async def _initiate_yk_payment(
                         back_callback=back_callback,
                         back_text_key="back_to_payment_methods_button",
                     ),
-                    disable_web_page_preview=False,
+                    disable_web_page_preview=True
                 )
             else:
                 await callback.message.edit_text(
-                    get_text(key="payment_link_message_yookassa", price=int(price_rub), date=end_date, period=total_days, num_pay=db_payment_record.payment_id),
+                    get_text(key="payment_link_message_yookassa", price=int(price_rub), date=end_date, period=total_days, num_pay=payment_response_yk.get('id')),
                     reply_markup=get_payment_url_keyboard(
                         payment_response_yk["confirmation_url"],
                         current_lang,
@@ -251,7 +251,7 @@ async def _initiate_yk_payment(
                         back_callback=back_callback,
                         back_text_key="back_to_payment_methods_button",
                     ),
-                    disable_web_page_preview=False,
+                    disable_web_page_preview=True
                 )
         except Exception as e_edit:
             logging.warning(
@@ -259,7 +259,7 @@ async def _initiate_yk_payment(
             )
             try:
                 await callback.message.answer(
-                    get_text(key="payment_link_message_yookassa", price=int(price_rub), date=end_date, period=total_days, num_pay=db_payment_record.payment_id),
+                    get_text(key="payment_link_message_yookassa", price=int(price_rub), date=end_date, period=total_days, num_pay=payment_response_yk.get('id')),
                     reply_markup=get_payment_url_keyboard(
                         payment_response_yk["confirmation_url"],
                         current_lang,
@@ -267,7 +267,7 @@ async def _initiate_yk_payment(
                         back_callback=back_callback,
                         back_text_key="back_to_payment_methods_button",
                     ),
-                    disable_web_page_preview=False,
+                    disable_web_page_preview=True
                 )
                 await callback.message.delete()
             except Exception:
