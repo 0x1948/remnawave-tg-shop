@@ -226,10 +226,10 @@ async def _initiate_yk_payment(
         end_date, total_days = calc_months_forward(months)
 
         try:
-            if settings.PHOTO_ID_PAY_CREATED:
+            if settings.PHOTO_ID_CRYPTO_PAY:
                 await callback.message.edit_media(
                     media=InputMediaPhoto(
-                        media=settings.PHOTO_ID_PAY_CREATED,
+                        media=settings.PHOTO_ID_RUS_PAY,
                         caption=get_text(key="payment_link_message_yookassa", price=int(price_rub), date=end_date, period=total_days, num_pay=payment_response_yk.get('id')),
                     ),
                     reply_markup=get_payment_url_keyboard(
@@ -1119,10 +1119,10 @@ async def pay_crypto_callback_handler(
 
     if invoice_url:
         try:
-            if settings.PHOTO_ID_PAY_CREATED:
+            if settings.PHOTO_ID_CRYPTO_PAY:
                 await callback.message.edit_media(
                     media=InputMediaPhoto(
-                        media=settings.PHOTO_ID_PAY_CREATED,
+                        media=settings.PHOTO_ID_CRYPTO_PAY,
                         caption=get_text(key="payment_link_message_crypto", price=int(price_amount), date=end_date, period=total_days, num_pay=payment_id),
                     ),
                     reply_markup=get_payment_url_keyboard(
@@ -1228,10 +1228,10 @@ async def pay_stars_callback_handler(
 
     if payment_db_id:
         try:
-            if settings.PHOTO_ID_PAY_CREATED:
+            if settings.settings.PHOTO_ID_STARS_PAY:
                 await callback.message.edit_media(
                     media=InputMediaPhoto(
-                        media=settings.PHOTO_ID_PAY_CREATED,
+                        media=settings.settings.PHOTO_ID_STARS_PAY,
                         caption=get_text("payment_invoice_sent_message", months=months)
                     ),
                     reply_markup=InlineKeyboardMarkup(inline_keyboard=[
