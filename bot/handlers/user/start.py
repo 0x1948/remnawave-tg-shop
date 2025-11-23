@@ -100,8 +100,8 @@ async def send_main_menu(target_event: Union[types.Message,
         return
 
     try:
-        if is_edit:
-            await target_message_obj.edit_text(text, reply_markup=reply_markup, disable_web_page_preview=True)
+        if is_edit and settings.PHOTO_ID_START:
+            await target_message_obj.edit_media(media=InputMediaPhoto(media=settings.PHOTO_ID_START, caption=text), reply_markup=reply_markup, disable_web_page_preview=True)
         else:
             if settings.PHOTO_ID_START:
                 await target_message_obj.answer_photo(photo=settings.PHOTO_ID_START, caption=text, reply_markup=reply_markup, disable_web_page_preview=True)
