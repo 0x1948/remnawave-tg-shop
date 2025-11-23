@@ -1222,7 +1222,8 @@ async def pay_stars_callback_handler(
         user_id=user_id,
         months=months,
         stars_price=stars_price,
-        description=payment_description,
+        title=get_text("payment_description_subscription"),
+        description=payment_description
     )
 
     if payment_db_id:
