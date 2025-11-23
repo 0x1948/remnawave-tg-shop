@@ -29,6 +29,17 @@ class Settings(BaseSettings):
     PHOTO_ID_GET_BONUS: str = Field(default=None)
     PHOTO_ID_GIFT_BRO: str = Field(default=None)
 
+    PHOTO_ID_VPN_DISABLED: str = Field(default=None)
+    PHOTO_ID_PAY_EXPIRED: str = Field(default=None)
+    PHOTO_ID_RUS_PAY: str = Field(default=None)
+    PHOTO_ID_CRYPTO_PAY: str = Field(default=None)
+    PHOTO_ID_STARS_PAY: str = Field(default=None)
+    PHOTO_ID_TEST_ACTIVATED: str = Field(default=None)
+    PHOTO_ID_EXPIRED_24_HOURS: str = Field(default=None)
+    PHOTO_ID_CONNECT_VPN: str = Field(default=None)
+
+
+
     DEFAULT_LANGUAGE: str = Field(default="ru")
     DEFAULT_CURRENCY_SYMBOL: str = Field(default="RUB")
 
