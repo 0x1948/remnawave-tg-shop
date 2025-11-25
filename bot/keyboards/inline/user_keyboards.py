@@ -87,8 +87,8 @@ def get_main_menu_inline_keyboard(
         callback_data="main_action:terms"
     ))
 
-    builder.button(text=_(key="back_to_main_menu_button"),
-                   callback_data="main_action:back_to_start")
+    builder.row(InlineKeyboardButton(text=_(key="back_to_main_menu_button"),
+                   callback_data="main_action:back_to_start"))
 
     return builder.as_markup()
 
