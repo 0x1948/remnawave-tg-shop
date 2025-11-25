@@ -87,6 +87,9 @@ def get_main_menu_inline_keyboard(
         callback_data="main_action:terms"
     ))
 
+    builder.button(text=_(key="back_to_main_menu_button"),
+                   callback_data="main_action:back_to_start")
+
     return builder.as_markup()
 
 def get_help_keyboard(
@@ -101,7 +104,7 @@ def get_help_keyboard(
     builder.button(text=_(key="menu_help_3_button"), url=settings.SUPPORT_LINK)
     builder.button(text=_(key="back_to_main_menu_button"),
                    callback_data="main_action:back_to_main")
-    builder.adjust(2)
+    builder.adjust(1)
     return builder.as_markup()
 
 def get_language_selection_keyboard(i18n_instance,
