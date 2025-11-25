@@ -929,7 +929,7 @@ async def main_action_callback_handler(
                              settings,
                              i18n_data,
                              subscription_service,
-                             settings, is_edit=True)
+                             session, is_edit=True)
     elif action == "back_to_main_keep":
         await send_own_menu(callback,
                             i18n_data,
