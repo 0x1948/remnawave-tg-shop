@@ -59,7 +59,7 @@
   "disconnect_device_button": "🚫 Отключить {hwid} ({index})",
   "device_disconnected": "Устройство успешно отключено.",
   "no_devices_found": "Ошибка загрузки списка устройств.",
-  "devices_unlimited_label": "Без ограничений",
+  "devices_unlimited_label": "∞",
   "my_devices_feature_disabled": "Раздел \"Мои устройства\" сейчас недоступен.",
   "cancel_button": "\uD83D\uDD19 Назад",
   "payment_description_subscription": "Оплата подписки на {months} мес.",
