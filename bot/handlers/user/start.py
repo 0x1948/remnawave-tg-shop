@@ -924,6 +924,12 @@ async def main_action_callback_handler(
                              i18n_data,
                              settings,
                              session)
+    elif action == "back_to_start":
+        await send_main_menu(callback,
+                             settings,
+                             i18n_data,
+                             subscription_service,
+                             settings, is_edit=True)
     elif action == "back_to_main_keep":
         await send_own_menu(callback,
                             i18n_data,
