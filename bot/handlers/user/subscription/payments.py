@@ -371,7 +371,7 @@ async def select_subscription_period_callback_handler(callback: types.CallbackQu
             except Exception as e:
                 logging.error(f"Error for deleting Stars message: {e}")
         else:
-            months = int(callback.data.split(":")[-1])
+            months = int(callback.data.split(":")[1])
     except (ValueError, IndexError):
         logging.error(f"Invalid subscription period in callback_data: {callback.data}")
         try:
