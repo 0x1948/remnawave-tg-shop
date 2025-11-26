@@ -406,6 +406,7 @@ async def ensure_required_channel_subscription(
         member = await bot_instance.get_chat_member(required_channel_id, user_id)
         status = getattr(member, "status", None)
         status_value = getattr(status, "value", status)
+        logging.info(status_value)
         allowed_statuses = {"creator", "administrator", "member", "restricted"}
         if status_value in allowed_statuses:
             is_member = True
@@ -461,15 +462,8 @@ async def ensure_required_channel_subscription(
         "channel_subscription_verified_for": required_channel_id,
         "channel_subscription_verified": is_member,
     }
-    try:
-        await user_dal.update_user(session, user_id, update_payload)
-    except Exception as update_error:
-        logging.error(
-            "Failed to persist channel verification result for user %s: %s",
-            user_id,
-            update_error,
-            exc_info=True,
-        )
+    logging.info(update_payload)
+    await user_dal.update_user(session, user_id, update_payload)
 
     if is_member:
         logging.info(
