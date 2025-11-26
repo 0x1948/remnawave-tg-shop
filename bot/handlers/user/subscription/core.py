@@ -263,6 +263,8 @@ async def my_subscription_command_handler(
         pass
     markup = InlineKeyboardMarkup(inline_keyboard=kb)
 
+    logging.info(markup)
+
     if isinstance(event, types.CallbackQuery):
         try:
             await event.answer()
