@@ -34,13 +34,22 @@ class PanelWebhookService:
         lang: str,
         message_key: str,
         reply_markup: InlineKeyboardMarkup | None = None,
+        photo_id: str | None = None,
         **kwargs,
     ):
         _ = lambda k, **kw: self.i18n.gettext(lang, k, **kw)
         try:
-            await self.bot.send_message(
-                user_id, _(message_key, **kwargs), reply_markup=reply_markup
-            )
+            if photo_id:
+                await self.bot.send_photo(
+                    user_id,
+                    photo_id,
+                    caption=_(message_key, **kwargs),
+                    reply_markup=reply_markup
+                )
+            else:
+                await self.bot.send_message(
+                    user_id, _(message_key, **kwargs), reply_markup=reply_markup
+                )
         except Exception as e:
             logging.error(f"Failed to send notification to {user_id}: {e}")
 
@@ -192,6 +201,7 @@ class PanelWebhookService:
                         lang,
                         msg_key,
                         reply_markup=markup,
+                        photo_id=self.settings.PHOTO_ID_EXPIRED_24_HOURS,
                         user_name=first_name,
                         end_date=user_payload.get("expireAt", "")[:10],
                     )
