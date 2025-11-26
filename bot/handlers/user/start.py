@@ -529,6 +529,69 @@ async def send_terms_text(event: Union[types.Message, types.CallbackQuery], i18n
     else:
         pass
 
+async def handle_help_text(event: Union[types.Message, types.CallbackQuery], i18n_data: dict, settings: Settings, session: AsyncSession, subscription_service: SubscriptionService, type_text: int):
+    current_lang = i18n_data.get("current_language", settings.DEFAULT_LANGUAGE)
+    i18n: Optional[JsonI18n] = i18n_data.get("i18n_instance")
+    get_text = lambda key, **kwargs: i18n.gettext(current_lang, key, **kwargs) if i18n else key
+
+    if not i18n:
+        err_msg = "Language service error."
+        print(err_msg)
+        if isinstance(event, types.CallbackQuery):
+            try:
+                await event.answer(err_msg, show_alert=True)
+            except Exception:
+                pass
+        elif isinstance(event, types.Message):
+            await event.answer(err_msg)
+        return
+
+    active = await subscription_service.get_active_subscription_details(session, event.from_user.id)
+    cfg_link_val = (active or {}).get("config_link")
+
+    text = None
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(
+            text=get_text(key="menu_my_subscription_inline"),
+            callback_data="main_action:my_subscription")
+        ],
+        [
+            InlineKeyboardButton(
+                text=get_text(key="back_to_main_menu_button"),
+                callback_data="main_action:back_to_help")
+        ]
+    ])
+
+    if type_text == 1:
+        text = get_text(key="help_text_1", sub_url=cfg_link_val if cfg_link_val else "Отсутствует")
+    elif type_text == 2:
+        text = get_text(key="help_text_2")
+
+    target_message_obj = event.message if isinstance(event, types.CallbackQuery) else event
+    if not target_message_obj:
+        if isinstance(event, types.CallbackQuery):
+            try:
+                await event.answer(get_text("error_occurred_try_again"), show_alert=True)
+            except Exception as e:
+                pass
+        return
+
+    if isinstance(event, types.CallbackQuery):
+        try:
+            if settings.PHOTO_ID_INSTRUCT:
+                await target_message_obj.edit_media(media=InputMediaPhoto(media=settings.PHOTO_ID_INSTRUCT, caption=text), reply_markup=keyboard, disable_web_page_preview=True)
+            else:
+                await target_message_obj.edit_text(text=text, reply_markup=keyboard, disable_web_page_preview=True)
+        except Exception as e:
+            print(repr(e))
+        try:
+            await event.answer()
+        except Exception as e:
+            print(repr(e))
+    else:
+        pass
+
+
 @router.message(F.photo)
 async def djfjdf(message: types.Message):
     print(message.photo[-1])
@@ -870,6 +933,21 @@ async def select_language_callback_handler(
                          is_edit=True)
 
 
+@router.callback_query(F.data.startswith("help:"))
+async def help_action_callback_handler(
+        callback: types.CallbackQuery, state: FSMContext, settings: Settings,
+        i18n_data: dict, bot: Bot, subscription_service: SubscriptionService,
+        referral_service: ReferralService, panel_service: PanelApiService,
+        promo_code_service: PromoCodeService, session: AsyncSession):
+    action = callback.data.split(":")[1]
+    user_id = callback.from_user.id
+
+    if not callback.message:
+        await callback.answer("Error: message context lost.", show_alert=True)
+        return
+
+    await handle_help_text(callback, i18n_data, settings, session, subscription_service, int(action))
+
 @router.callback_query(F.data.startswith("main_action:"))
 async def main_action_callback_handler(
         callback: types.CallbackQuery, state: FSMContext, settings: Settings,
@@ -930,6 +1008,8 @@ async def main_action_callback_handler(
                              i18n_data,
                              subscription_service,
                              session, is_edit=True)
+    elif action == "back_to_help":
+        await send_help_text(callback, i18n_data, settings, session)
     elif action == "back_to_main_keep":
         await send_own_menu(callback,
                             i18n_data,
