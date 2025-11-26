@@ -151,7 +151,7 @@ def get_subscription_options_keyboard(subscription_options: Dict[
         builder.adjust(2)
     builder.row(
         InlineKeyboardButton(text=_(key="back_to_main_menu_button"),
-                             callback_data="main_action:back_to_main"))
+                             callback_data="main_action:back_to_start"))
     return builder.as_markup()
 
 
