@@ -46,7 +46,13 @@ class StarsService:
                           exc_info=True)
             return None
 
-        payload = f"{db_payment_record.payment_id}:{months}"
+        return db_payment_record.payment_id
+
+
+    async def sending_invoice(self, db_payment_id, user_id: int, months: int,
+                             stars_price: int, title: str, description: str):
+
+        payload = f"{db_payment_id}:{months}"
         prices = [LabeledPrice(label=description, amount=stars_price)]
         try:
             msg = await self.bot.send_invoice(
@@ -58,7 +64,7 @@ class StarsService:
                 currency="XTR",
                 prices=prices,
             )
-            return db_payment_record.payment_id, msg.message_id
+            return msg.message_id
         except Exception as e_inv:
             logging.error(f"Failed to send Telegram Stars invoice: {e_inv}",
                           exc_info=True)

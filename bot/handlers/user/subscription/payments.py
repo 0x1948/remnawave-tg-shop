@@ -1264,7 +1264,7 @@ async def pay_stars_callback_handler(
     user_id = callback.from_user.id
     payment_description = get_text("payment_link_message_stars", price=stars_price, date=end_date, period=total_days)
 
-    payment_db_id, msg_id = await stars_service.create_invoice(
+    payment_db_id = await stars_service.create_invoice(
         session=session,
         user_id=user_id,
         months=months,
@@ -1274,42 +1274,50 @@ async def pay_stars_callback_handler(
     )
 
     if payment_db_id:
+        await callback.message.delete()
+        msg_id = await stars_service.sending_invoice(payment_db_id, user_id, months, stars_price, get_text("payment_description_subscription", months=months), payment_description)
+        if msg_id:
+            try:
+                if settings.PHOTO_ID_STARS_PAY:
+                    await callback.message.answer_photo(
+                        media=InputMediaPhoto(
+                            media=settings.PHOTO_ID_STARS_PAY,
+                            caption=get_text("payment_invoice_sent_message", months=months)
+                        ),
+                        reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+                            [InlineKeyboardButton(
+                                text=get_text("back_to_payment_methods_button"),
+                                callback_data=f"subscribe_period:{months}:{msg_id}",
+                            )]
+                        ])
+                    )
+                else:
+                    await callback.message.answer(
+                        get_text("payment_invoice_sent_message", months=months),
+                        reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+                            [InlineKeyboardButton(
+                                text=get_text("back_to_payment_methods_button"),
+                                callback_data=f"subscribe_period:{months}:{msg_id}",
+                            )]
+                        ]),
+                    )
+            except Exception as e_edit:
+                logging.warning(f"Stars payment: failed to show invoice info message ({e_edit})")
+            try:
+                await callback.answer()
+            except Exception:
+                pass
+            return
+        else:
+            try:
+                await callback.answer(get_text("error_payment_gateway"), show_alert=True)
+            except Exception:
+                pass
+    else:
         try:
-            if settings.PHOTO_ID_STARS_PAY:
-                await callback.message.edit_media(
-                    media=InputMediaPhoto(
-                        media=settings.PHOTO_ID_STARS_PAY,
-                        caption=get_text("payment_invoice_sent_message", months=months)
-                    ),
-                    reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-                        [InlineKeyboardButton(
-                            text=get_text("back_to_payment_methods_button"),
-                            callback_data=f"subscribe_period:{months}:{msg_id}",
-                        )]
-                    ])
-                )
-            else:
-                await callback.message.edit_text(
-                    get_text("payment_invoice_sent_message", months=months),
-                    reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-                        [InlineKeyboardButton(
-                            text=get_text("back_to_payment_methods_button"),
-                            callback_data=f"subscribe_period:{months}:{msg_id}",
-                        )]
-                    ]),
-                )
-        except Exception as e_edit:
-            logging.warning(f"Stars payment: failed to show invoice info message ({e_edit})")
-        try:
-            await callback.answer()
+            await callback.answer(get_text("error_payment_gateway"), show_alert=True)
         except Exception:
             pass
-        return
-
-    try:
-        await callback.answer(get_text("error_payment_gateway"), show_alert=True)
-    except Exception:
-        pass
 
 
 @router.pre_checkout_query()

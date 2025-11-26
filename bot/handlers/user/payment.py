@@ -70,7 +70,7 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
         its_test_period = False
 
         logging.info(f"PENIS: {payment_value}")
-        if payment_value == 1.0:
+        if payment_value == 1.0 and float(subscription_months_str) == 0.5:
             its_test_period = True
 
         # If this is an auto-renewal (no payment_db_id in metadata), ensure a payment record exists
