@@ -366,9 +366,6 @@ async def ensure_required_channel_subscription(
         )
         return False
 
-    if user_id in settings.ADMIN_IDS:
-        return True
-
     if db_user is None:
         try:
             db_user = await user_dal.get_user_by_id(session, user_id)
@@ -406,7 +403,6 @@ async def ensure_required_channel_subscription(
         member = await bot_instance.get_chat_member(required_channel_id, user_id)
         status = getattr(member, "status", None)
         status_value = getattr(status, "value", status)
-        logging.info(status_value)
         allowed_statuses = {"creator", "administrator", "member", "restricted"}
         if status_value in allowed_statuses:
             is_member = True
@@ -462,8 +458,15 @@ async def ensure_required_channel_subscription(
         "channel_subscription_verified_for": required_channel_id,
         "channel_subscription_verified": is_member,
     }
-    logging.info(update_payload)
-    await user_dal.update_user(session, user_id, update_payload)
+    try:
+        await user_dal.update_user(session, user_id, update_payload)
+    except Exception as update_error:
+        logging.error(
+            "Failed to persist channel verification result for user %s: %s",
+            user_id,
+            update_error,
+            exc_info=True,
+        )
 
     if is_member:
         logging.info(
@@ -830,20 +833,21 @@ async def verify_channel_subscription_callback(
                 await fallback_bot.send_message(callback.from_user.id,
                                                 welcome_text)
 
-    bonus_days = 4
-    new_end_date = await subscription_service.extend_active_subscription_days(
-        session=session,
-        user_id=callback.from_user.id,
-        bonus_days=bonus_days,
-        reason=f"subscribe to channel")
+    if verified:
+        bonus_days = 4
+        new_end_date = await subscription_service.extend_active_subscription_days(
+            session=session,
+            user_id=callback.from_user.id,
+            bonus_days=bonus_days,
+            reason=f"subscribe to channel")
 
-    try:
-        await callback.answer(_(key="channel_subscription_verified_success"),
-                              show_alert=True)
-    except Exception:
-        pass
+        try:
+            await callback.answer(_(key="channel_subscription_verified_success"),
+                                  show_alert=True)
+        except Exception:
+            pass
 
-    await send_own_menu(callback, i18n_data, settings, session)
+        await send_own_menu(callback, i18n_data, settings, session)
 
 @router.message(Command("language"))
 @router.callback_query(F.data == "main_action:language")
