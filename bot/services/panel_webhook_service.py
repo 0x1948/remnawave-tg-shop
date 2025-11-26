@@ -186,6 +186,16 @@ class PanelWebhookService:
         if event_name in EVENT_MAP:
             days_left, msg_key = EVENT_MAP[event_name]
             if days_left <= self.settings.SUBSCRIPTION_NOTIFY_DAYS_BEFORE:
+                if days_left == 1:
+                    await self._send_message(
+                        user_id,
+                        lang,
+                        msg_key,
+                        reply_markup=markup,
+                        user_name=first_name,
+                        end_date=user_payload.get("expireAt", "")[:10],
+                    )
+
                 # For 48h event, if auto-renew is enabled and not tribute, show special notice with cancel button
                 if days_left == 2:
                     async with self.async_session_factory() as session:
