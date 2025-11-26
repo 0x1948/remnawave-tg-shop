@@ -67,6 +67,11 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
 
         amount_data = payment_info_from_webhook.get("amount", {})
         payment_value = float(amount_data.get("value", 0.0))
+        its_test_period = False
+
+        logging.info(f"PENIS: {payment_value}")
+        if payment_value == 1.0 and float(subscription_months_str) == 0.5:
+            its_test_period = True
 
         # If this is an auto-renewal (no payment_db_id in metadata), ensure a payment record exists
         if payment_db_id is None and auto_renew_subscription_id_str:
@@ -279,12 +284,18 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
                     config_link=config_link,
                 )
             elif final_end_date_for_user:
-                details_message = _(
-                    "payment_successful_full",
-                    months=subscription_months,
-                    end_date=final_end_date_for_user.strftime('%Y-%m-%d'),
-                    config_link=config_link,
-                )
+                if its_test_period:
+                    details_message = _(
+                        "payment_trial_successful",
+                        sub_url=config_link
+                    )
+                else:
+                    details_message = _(
+                        "payment_successful_full",
+                        months=subscription_months,
+                        end_date=final_end_date_for_user.strftime('%Y-%m-%d'),
+                        config_link=config_link,
+                    )
             else:
                 logging.error(
                     f"Critical error: final_end_date_for_user is None for user {user_id} after successful payment logic."
@@ -295,13 +306,22 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
                 user_lang, i18n, settings, config_link, preserve_message=True
             )
         try:
-            await bot.send_message(
-                user_id,
-                details_message,
-                reply_markup=details_markup,
-                parse_mode="HTML",
-                disable_web_page_preview=True,
-            )
+            if its_test_period:
+                await bot.send_photo(
+                    user_id,
+                    photo=settings.PHOTO_ID_TEST_ACTIVATED,
+                    caption=details_message,
+                    reply_markup=details_markup,
+                    parse_mode="HTML"
+                )
+            else:
+                await bot.send_message(
+                    user_id,
+                    details_message,
+                    reply_markup=details_markup,
+                    parse_mode="HTML",
+                    disable_web_page_preview=True,
+                )
         except Exception as e_notify:
             logging.error(
                 f"Failed to send payment details message to user {user_id}: {e_notify}"
