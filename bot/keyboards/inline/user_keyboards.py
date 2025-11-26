@@ -328,6 +328,7 @@ def get_subscribe_only_markup(lang: str, i18n_instance) -> InlineKeyboardMarkup:
         text=_(key="menu_own_button"),
         callback_data="main_action:own"
     )
+    builder.adjust(1)
     return builder.as_markup()
 
 
