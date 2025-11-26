@@ -364,7 +364,14 @@ async def select_subscription_period_callback_handler(callback: types.CallbackQu
         return
 
     try:
-        months = int(callback.data.split(":")[-1])
+        if len(callback.data.split(":")) == 2:
+            months = int(callback.data.split(":")[1])
+            try:
+                await callback.bot.delete_message( callback.from_user.id, int(callback.data.split(":")[-1]) )
+            except Exception as e:
+                logging.error(f"Error for deleting Stars message: {e}")
+        else:
+            months = int(callback.data.split(":")[-1])
     except (ValueError, IndexError):
         logging.error(f"Invalid subscription period in callback_data: {callback.data}")
         try:
@@ -1257,7 +1264,7 @@ async def pay_stars_callback_handler(
     user_id = callback.from_user.id
     payment_description = get_text("payment_link_message_stars", price=stars_price, date=end_date, period=total_days)
 
-    payment_db_id = await stars_service.create_invoice(
+    payment_db_id, msg_id = await stars_service.create_invoice(
         session=session,
         user_id=user_id,
         months=months,
@@ -1277,7 +1284,7 @@ async def pay_stars_callback_handler(
                     reply_markup=InlineKeyboardMarkup(inline_keyboard=[
                         [InlineKeyboardButton(
                             text=get_text("back_to_payment_methods_button"),
-                            callback_data=f"subscribe_period:{months}",
+                            callback_data=f"subscribe_period:{months}:{msg_id}",
                         )]
                     ])
                 )
@@ -1287,7 +1294,7 @@ async def pay_stars_callback_handler(
                     reply_markup=InlineKeyboardMarkup(inline_keyboard=[
                         [InlineKeyboardButton(
                             text=get_text("back_to_payment_methods_button"),
-                            callback_data=f"subscribe_period:{months}",
+                            callback_data=f"subscribe_period:{months}:{msg_id}",
                         )]
                     ]),
                 )
