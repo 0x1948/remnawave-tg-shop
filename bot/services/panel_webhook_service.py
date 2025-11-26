@@ -205,6 +205,7 @@ class PanelWebhookService:
                         user_name=first_name,
                         end_date=user_payload.get("expireAt", "")[:10],
                     )
+                    return
 
                 # For 48h event, if auto-renew is enabled and not tribute, show special notice with cancel button
                 if days_left == 2:
