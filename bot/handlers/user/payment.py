@@ -1,7 +1,7 @@
 import logging
 import json
 import asyncio
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone, timedelta, date
 from typing import Optional, Dict, Any
 
 from aiohttp import web
@@ -30,6 +30,37 @@ YOOKASSA_EVENT_PAYMENT_SUCCEEDED = 'payment.succeeded'
 YOOKASSA_EVENT_PAYMENT_CANCELED = 'payment.canceled'
 YOOKASSA_EVENT_PAYMENT_WAITING_FOR_CAPTURE = 'payment.waiting_for_capture'
 
+def add_months_2(start: date, months: int = 0, days: int = 0) -> date:
+    """Add months and/or days to a date with month-clamping logic preserved."""
+
+    if months != 0:
+        new_year = start.year + (start.month - 1 + months) // 12
+        new_month = (start.month - 1 + months) % 12 + 1
+
+        if new_month == 12:
+            next_month_year = new_year + 1
+            next_month = 1
+        else:
+            next_month_year = new_year
+            next_month = new_month + 1
+
+        last_day_of_new_month = date(next_month_year, next_month, 1) - timedelta(days=1)
+        new_day = min(start.day, last_day_of_new_month.day)
+
+        result = date(new_year, new_month, new_day)
+    else:
+        result = start
+
+    if days != 0:
+        result = result + timedelta(days=days)
+
+    return result
+
+def calc_months_forward2(months: int = 0, days: int = 0):
+    start = date.today()
+    end = add_months_2(start, months=months, days=days)
+    days_diff = (end - start).days
+    return end, days_diff
 
 async def process_successful_payment(session: AsyncSession, bot: Bot,
                                      payment_info_from_webhook: dict,
@@ -243,19 +274,24 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
         user_lang = db_user.language_code if db_user and db_user.language_code else settings.DEFAULT_LANGUAGE
         _ = lambda key, **kwargs: i18n.gettext(user_lang, key, **kwargs)
 
+        config_link = activation_details.get("subscription_url") or _(
+            "config_link_not_available"
+        )
+
+        end_date, total_days = calc_months_forward2(int(subscription_months))
+
         # For auto-renew charges, avoid re-sending config link; send concise message
         if is_auto_renew and final_end_date_for_user:
             details_message = _(
                 "yookassa_auto_renewal",
-                months=subscription_months,
+                sub_url=config_link,
                 end_date=final_end_date_for_user.strftime('%Y-%m-%d'),
+                period=total_days
             )
-            details_markup = None
+            details_markup = get_connect_and_main_keyboard(
+                user_lang, i18n, settings, config_link, preserve_message=True
+            )
         else:
-            config_link = activation_details.get("subscription_url") or _(
-                "config_link_not_available"
-            )
-
             if applied_referee_bonus_days_from_referral and final_end_date_for_user:
                 inviter_name_display = _("friend_placeholder")
                 if db_user and db_user.referred_by_id:
@@ -312,6 +348,14 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
                 await bot.send_photo(
                     user_id,
                     photo=settings.PHOTO_ID_TEST_ACTIVATED,
+                    caption=details_message,
+                    reply_markup=details_markup,
+                    parse_mode="HTML"
+                )
+            elif is_auto_renew and final_end_date_for_user:
+                await bot.send_photo(
+                    user_id,
+                    photo=settings.PHOTO_ID_YOUR_PROF,
                     caption=details_message,
                     reply_markup=details_markup,
                     parse_mode="HTML"
