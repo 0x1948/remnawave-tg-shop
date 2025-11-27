@@ -496,7 +496,7 @@ async def yookassa_webhook_route(request: web.Request):
             str(payment_data_from_notification.description)
             if payment_data_from_notification.description else None,
             "payment_method": pm_dict,
-            "cancellation_details": dict(payment_data_from_notification.cancellation_details)
+            "cancellation_details": dict(payment_data_from_notification.cancellation_details) if payment_data_from_notification.cancellation_details else None
         }
 
         async with payment_processing_lock:
