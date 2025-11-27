@@ -352,6 +352,14 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
                     reply_markup=details_markup,
                     parse_mode="HTML"
                 )
+            elif is_auto_renew and final_end_date_for_user:
+                await bot.send_photo(
+                    user_id,
+                    photo=settings.PHOTO_ID_YOUR_PROF,
+                    caption=details_message,
+                    reply_markup=details_markup,
+                    parse_mode="HTML"
+                )
             else:
                 await bot.send_message(
                     user_id,
