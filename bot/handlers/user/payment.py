@@ -357,6 +357,8 @@ async def process_cancelled_payment(session: AsyncSession, bot: Bot,
                                     i18n: JsonI18n, settings: Settings):
 
     metadata = payment_info_from_webhook.get("metadata", {})
+    logging.info(metadata)
+    logging.info(payment_info_from_webhook)
     user_id_str = metadata.get("user_id")
     payment_db_id_str = metadata.get("payment_db_id")
     cancellation_details = payment_info_from_webhook.get('cancellation_details')
