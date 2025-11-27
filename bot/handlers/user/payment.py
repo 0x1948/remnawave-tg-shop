@@ -87,7 +87,7 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
                     currency=amount_data.get("currency", settings.DEFAULT_CURRENCY_SYMBOL),
                     months=if_test_period_months,
                     description=payment_info_from_webhook.get(
-                        "description") or f"Auto-renewal for {subscription_months} months",
+                        "description") or f"Auto-renewal for {if_test_period_months} months",
                     provider="yookassa",
                     provider_payment_id=yk_payment_id_from_hook,
                 )
