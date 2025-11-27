@@ -460,7 +460,7 @@ class SubscriptionService:
         if months == 0.5:
             end_after_months = add_time(start_date, days=7)
         else:
-            end_after_months = add_time(start_date, months=months)
+            end_after_months = add_time(start_date, months=int(months))
 
         duration_days_total = (end_after_months - start_date).days
         applied_promo_bonus_days = 0
