@@ -167,7 +167,7 @@ def get_payment_method_keyboard(months: int, price: float,
                        callback_data=f"pay_fk:{months}:{price}")
     if settings.YOOKASSA_ENABLED:
         builder.button(text=_("pay_with_yookassa_button"),
-                       callback_data=f"pay_yk:{months}:{price}")
+                       callback_data=f"pay_yk_new:{months}:{price}")
     if settings.TRIBUTE_ENABLED and tribute_url:
         builder.button(text=_("pay_with_tribute_button"), url=tribute_url)
     if settings.STARS_ENABLED and stars_price is not None:
