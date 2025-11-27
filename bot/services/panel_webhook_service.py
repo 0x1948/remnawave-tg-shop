@@ -244,6 +244,7 @@ class PanelWebhookService:
                     async with self.async_session_factory() as session:
                         from db.dal import subscription_dal
                         sub = await subscription_dal.get_active_subscription_by_user_id(session, user_id)
+                        logging.info(sub)
                         if sub and sub.auto_renew_enabled and sub.provider != 'tribute':
                             try:
                                 ok = await subscription_service.charge_subscription_renewal(session, sub)
