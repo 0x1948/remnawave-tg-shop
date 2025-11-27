@@ -57,7 +57,8 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
     db_user = None
     try:
         user_id = int(user_id_str)
-        subscription_months = int(subscription_months_str)
+        subscription_months = float(subscription_months_str)
+        if_test_period_months = "1" if subscription_months == 0.5 else int(subscription_months_str)
         payment_db_id = int(
             payment_db_id_str) if payment_db_id_str and payment_db_id_str.isdigit() else None
         is_auto_renew = bool(auto_renew_subscription_id_str and not payment_db_id)
@@ -70,7 +71,7 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
         its_test_period = False
 
         logging.info(f"PENIS: {payment_value}")
-        if payment_value == 1.0 and float(subscription_months_str) == 0.5:
+        if payment_value == 1.0 and subscription_months == 0.5:
             its_test_period = True
 
         # If this is an auto-renewal (no payment_db_id in metadata), ensure a payment record exists
@@ -84,9 +85,9 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
                     user_id=user_id,
                     amount=payment_value,
                     currency=amount_data.get("currency", settings.DEFAULT_CURRENCY_SYMBOL),
-                    months=subscription_months,
+                    months=if_test_period_months,
                     description=payment_info_from_webhook.get(
-                        "description") or f"Auto-renewal for {subscription_months} months",
+                        "description") or f"Auto-renewal for {if_test_period_months} months",
                     provider="yookassa",
                     provider_payment_id=yk_payment_id_from_hook,
                 )
@@ -227,7 +228,7 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
             referral_bonus_info = await referral_service.apply_referral_bonuses_for_payment(
                 session,
                 user_id,
-                subscription_months,
+                if_test_period_months,
                 current_payment_db_id=payment_db_id,
                 skip_if_active_before_payment=False,
             )
