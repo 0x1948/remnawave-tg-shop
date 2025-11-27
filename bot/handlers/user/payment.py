@@ -381,7 +381,7 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
                 user_id=user_id,
                 amount=payment_value,
                 currency=settings.DEFAULT_CURRENCY_SYMBOL,
-                months="subscription_months",
+                months=int(subscription_months),
                 payment_provider="yookassa",  # This is specifically for YooKassa webhook
                 username=user.username if user else None
             )
