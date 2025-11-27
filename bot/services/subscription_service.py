@@ -6,7 +6,7 @@ from aiogram import Bot
 from bot.middlewares.i18n import JsonI18n
 
 from db.dal import user_dal, subscription_dal, promo_code_dal, payment_dal, user_billing_dal
-from bot.utils.date_utils import add_months
+from bot.utils.date_utils import add_months, add_time
 from db.models import User, Subscription
 
 from config.settings import Settings
@@ -421,7 +421,7 @@ class SubscriptionService:
         self,
         session: AsyncSession,
         user_id: int,
-        months: int,
+        months: float,
         payment_amount: float,
         payment_db_id: int,
         promo_code_id_from_payment: Optional[int] = None,
@@ -457,7 +457,11 @@ class SubscriptionService:
             start_date = current_active_sub.end_date
 
         # base duration by months
-        end_after_months = add_months(start_date, months)
+        if months == 0.5:
+            end_after_months = add_time(start_date, days=7)
+        else:
+            end_after_months = add_time(start_date, months=months)
+
         duration_days_total = (end_after_months - start_date).days
         applied_promo_bonus_days = 0
 

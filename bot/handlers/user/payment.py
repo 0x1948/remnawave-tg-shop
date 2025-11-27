@@ -204,7 +204,7 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
         activation_details = await subscription_service.activate_subscription(
             session,
             user_id,
-            subscription_months,
+            float(subscription_months_str),
             payment_value,
             payment_db_id,
             promo_code_id_from_payment=promo_code_id,
@@ -222,20 +222,21 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
         applied_promo_bonus_days = activation_details.get(
             "applied_promo_bonus_days", 0)
 
-        referral_bonus_info = await referral_service.apply_referral_bonuses_for_payment(
-            session,
-            user_id,
-            subscription_months,
-            current_payment_db_id=payment_db_id,
-            skip_if_active_before_payment=False,
-        )
         applied_referee_bonus_days_from_referral: Optional[int] = None
-        if referral_bonus_info and referral_bonus_info.get(
-                "referee_new_end_date"):
-            final_end_date_for_user = referral_bonus_info[
-                "referee_new_end_date"]
-            applied_referee_bonus_days_from_referral = referral_bonus_info.get(
-                "referee_bonus_applied_days")
+        if not float(subscription_months_str) == 0.5:
+            referral_bonus_info = await referral_service.apply_referral_bonuses_for_payment(
+                session,
+                user_id,
+                subscription_months,
+                current_payment_db_id=payment_db_id,
+                skip_if_active_before_payment=False,
+            )
+            if referral_bonus_info and referral_bonus_info.get(
+                    "referee_new_end_date"):
+                final_end_date_for_user = referral_bonus_info[
+                    "referee_new_end_date"]
+                applied_referee_bonus_days_from_referral = referral_bonus_info.get(
+                    "referee_bonus_applied_days")
 
         # Use user's DB language for all user-facing messages
         user_lang = db_user.language_code if db_user and db_user.language_code else settings.DEFAULT_LANGUAGE
