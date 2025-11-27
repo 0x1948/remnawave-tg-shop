@@ -26,6 +26,8 @@ router = Router(name="user_subscription_payments_router")
 def _parse_months_and_price(payload: str) -> Optional[Tuple[int, float]]:
     try:
         months_str, price_str = payload.split(":")
+        if months_str == "0.5":
+            return float(months_str), float(price_str)
         return int(months_str), float(price_str)
     except (ValueError, IndexError):
         return None
