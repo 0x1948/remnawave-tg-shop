@@ -23,7 +23,7 @@ from db.dal import payment_dal, user_billing_dal
 router = Router(name="user_subscription_payments_router")
 
 
-def _parse_months_and_price(payload: str) -> Optional[Tuple[int, float]]:
+def _parse_months_and_price(payload: str):
     try:
         months_str, price_str = payload.split(":")
         if months_str == "0.5":
@@ -558,7 +558,7 @@ async def pay_yk_callback_handler(callback: types.CallbackQuery, settings: Setti
         price_rub=price_rub,
         currency_code_for_yk=currency_code_for_yk,
         save_payment_method=autopay_enabled and autopay_require_binding,
-        back_callback=f"subscribe_period:{months}",
+        back_callback=f"subscribe_period:{months}" if isinstance(months, int) else f"main_action:request_trial"
     )
     try:
         await callback.answer()
