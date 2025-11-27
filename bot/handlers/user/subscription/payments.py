@@ -558,7 +558,7 @@ async def pay_yk_callback_handler(callback: types.CallbackQuery, settings: Setti
         price_rub=price_rub,
         currency_code_for_yk=currency_code_for_yk,
         save_payment_method=autopay_enabled and autopay_require_binding,
-        back_callback=f"main_action:request_trial" if float(months) == 0.5 else f"subscribe_period:{months}"
+        back_callback=f"subscribe_period:{months}"
     )
     try:
         await callback.answer()
@@ -631,7 +631,7 @@ async def pay_yk_new_card_handler(callback: types.CallbackQuery, settings: Setti
         price_rub=price_rub,
         currency_code_for_yk=currency_code_for_yk,
         save_payment_method=autopay_enabled and autopay_require_binding,
-        back_callback=f"subscribe_period:{months}",
+        back_callback=f"main_action:request_trial" if float(months) == 0.5 else f"subscribe_period:{months}"
     )
     try:
         await callback.answer()
