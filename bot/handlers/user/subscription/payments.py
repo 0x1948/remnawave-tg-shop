@@ -32,26 +32,36 @@ def _parse_months_and_price(payload: str) -> Optional[Tuple[int, float]]:
     except (ValueError, IndexError):
         return None
 
-def add_months(start: date, months: int) -> date:
-    new_year = start.year + (start.month - 1 + months) // 12
-    new_month = (start.month - 1 + months) % 12 + 1
 
-    if new_month == 12:
-        next_month_year = new_year + 1
-        next_month = 1
+def add_months(start: date, months: int = 0, days: int = 0) -> date:
+    """Add months and/or days to a date with month-clamping logic preserved."""
+
+    if months != 0:
+        new_year = start.year + (start.month - 1 + months) // 12
+        new_month = (start.month - 1 + months) % 12 + 1
+
+        if new_month == 12:
+            next_month_year = new_year + 1
+            next_month = 1
+        else:
+            next_month_year = new_year
+            next_month = new_month + 1
+
+        last_day_of_new_month = date(next_month_year, next_month, 1) - timedelta(days=1)
+        new_day = min(start.day, last_day_of_new_month.day)
+
+        result = date(new_year, new_month, new_day)
     else:
-        next_month_year = new_year
-        next_month = new_month + 1
+        result = start
 
-    last_day_of_new_month = date(next_month_year, next_month, 1) - timedelta(days=1)
+    if days != 0:
+        result = result + timedelta(days=days)
 
-    new_day = min(start.day, last_day_of_new_month.day)
+    return result
 
-    return date(new_year, new_month, new_day)
-
-def calc_months_forward(months: int):
+def calc_months_forward(months: int = 0, days: int = 0):
     start = date.today()
-    end = add_months(start, months)
+    end = add_months(start, months=months, days=days)
     days_diff = (end - start).days
     return end, days_diff
 
@@ -86,7 +96,7 @@ async def _initiate_yk_payment(
     current_lang: str,
     get_text,
     user_id: int,
-    months: int,
+    months: float,
     price_rub: float,
     currency_code_for_yk: str,
     save_payment_method: bool,
@@ -225,7 +235,11 @@ async def _initiate_yk_payment(
                 pass
             return False
 
-        end_date, total_days = calc_months_forward(months)
+
+        if months == 0.5:
+            end_date, total_days = calc_months_forward(days=7)
+        else:
+            end_date, total_days = calc_months_forward(months=int(months))
 
         try:
             if settings.PHOTO_ID_CRYPTO_PAY:
