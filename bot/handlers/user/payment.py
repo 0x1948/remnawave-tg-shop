@@ -21,7 +21,7 @@ from bot.services.yookassa_service import YooKassaService
 from bot.middlewares.i18n import JsonI18n
 from config.settings import Settings
 from bot.services.notification_service import NotificationService
-from bot.keyboards.inline.user_keyboards import get_connect_and_main_keyboard
+from bot.keyboards.inline.user_keyboards import get_connect_and_main_keyboard, get_subscribe_only_markup
 from bot.utils.text_sanitizer import sanitize_display_name, username_for_display
 
 payment_processing_lock = asyncio.Lock()
@@ -395,10 +395,17 @@ async def process_cancelled_payment(session: AsyncSession, bot: Bot,
         if db_user and db_user.language_code: user_lang = db_user.language_code
 
         _ = lambda key, **kwargs: i18n.gettext(user_lang, key, **kwargs)
-        await bot.send_message(user_id, _("payment_failed"))
+        markup = get_subscribe_only_markup(user_lang, i18n)
 
-        if cancellation_details.get('reason'):
-            await bot.send_message(user_id, f"Причина: {cancellation_details['reason']}.\nЭто означает, что ты НИЩИЙ. \n\n\n\nАХАХАХАХАХАХХАХАХАХАХАХАХАХА ХАХАХАХА")
+        if cancellation_details.get('reason') != "expired_on_confirmation":
+            await bot.send_photo(
+                user_id,
+                photo=settings.PHOTO_ID_VPN_DISABLED,
+                caption=_(key="payment_failed_vpn_dis"),
+                reply_markup=markup
+            )
+        else:
+            await bot.send_message(user_id, _("payment_failed"))
 
     except Exception as e_process_cancel:
         logging.error(
