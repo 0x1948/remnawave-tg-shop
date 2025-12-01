@@ -62,8 +62,7 @@ async def referral_command_handler(event: Union[types.Message,
         return
 
     inviter_user_id = event.from_user.id
-    referral_link = referral_service.generate_referral_link(
-        bot_username, inviter_user_id)
+    referral_link = referral_service.generate_referral_link(bot_username, inviter_user_id)
 
     bonus_info_parts = []
     if settings.subscription_options:

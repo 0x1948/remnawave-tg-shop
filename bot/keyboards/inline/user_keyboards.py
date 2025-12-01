@@ -297,11 +297,20 @@ def get_referral_link_keyboard(lang: str,
     builder = InlineKeyboardBuilder()
     builder.button(text=_(key="referral_share_message_button"),
                    callback_data="referral_action:share_message")
-    builder.button(text=_(key="back_to_main_menu_button"),
+    builder.button(text=_(key="menu_own_button"),
                    callback_data="main_action:back_to_main")
     builder.adjust(1)
     return builder.as_markup()
 
+def get_create_invite_keyboard(lang: str, i18n_instance) -> InlineKeyboardMarkup:
+    _ = lambda key, **kwargs: i18n_instance.gettext(lang, key, **kwargs)
+    builder = InlineKeyboardBuilder()
+    builder.button(text=_(key="referral_share_message_button"),
+                   callback_data="referral_action:share_message")
+    builder.button(text=_(key="menu_own_button"),
+                   callback_data="main_action:back_to_main")
+    builder.adjust(1)
+    return builder.as_markup()
 
 def get_back_to_main_menu_markup(lang: str,
                                  i18n_instance,
