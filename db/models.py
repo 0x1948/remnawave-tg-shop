@@ -1,4 +1,5 @@
-from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime, Float, ForeignKey, UniqueConstraint, Text, BigInteger
+from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime, Float, ForeignKey, UniqueConstraint, \
+    Text, BigInteger, Numeric
 from sqlalchemy.orm import relationship, DeclarativeBase
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.sql import func
@@ -19,6 +20,7 @@ class User(Base):
     language_code = Column(String, default="ru")
     registration_date = Column(DateTime(timezone=True),
                                server_default=func.now())
+    balance = Column(Numeric(18, 6), nullable=False, default=0)
     is_banned = Column(Boolean, default=False)
     panel_user_uuid = Column(String, nullable=True, unique=True, index=True)
     referred_by_id = Column(BigInteger,
