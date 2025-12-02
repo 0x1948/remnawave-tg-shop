@@ -380,14 +380,7 @@ async def select_subscription_period_callback_handler(callback: types.CallbackQu
         return
 
     try:
-        if len(callback.data.split(":")) == 2:
-            months = int(callback.data.split(":")[1])
-            try:
-                await callback.bot.delete_message( callback.from_user.id, int(callback.data.split(":")[-1]) )
-            except Exception as e:
-                logging.error(f"Error for deleting Stars message: {e}")
-        else:
-            months = int(callback.data.split(":")[1])
+        months = int(callback.data.split(":")[1])
     except (ValueError, IndexError):
         logging.error(f"Invalid subscription period in callback_data: {callback.data}")
         try:
