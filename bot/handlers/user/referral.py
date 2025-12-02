@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from config.settings import Settings
 from bot.services.referral_service import ReferralService
 
-from bot.keyboards.inline.user_keyboards import get_back_to_main_menu_markup
+from bot.keyboards.inline.user_keyboards import get_back_to_main_menu_markup, get_create_invite_keyboard
 from bot.middlewares.i18n import JsonI18n
 
 router = Router(name="user_referral_router")
@@ -128,7 +128,45 @@ async def referral_action_handler(callback: types.CallbackQuery, settings: Setti
     i18n = i18n_data.get("i18n_instance")
     _ = lambda key, **kwargs: i18n.gettext(current_lang, key, **kwargs)
 
-    if action == "share_message":
+    if action == "my_link":
+        try:
+            bot_info = await bot.get_me()
+            bot_username = bot_info.username
+            if not bot_username:
+                await callback.answer("Ошибка получения имени бота", show_alert=True)
+                return
+
+            inviter_user_id = callback.from_user.id
+            referral_link = referral_service.generate_referral_link(bot_username, inviter_user_id)
+
+            my_statics_message = _(
+                "referral_info_text",
+                ref_link=referral_link,
+                count_invited="заглушка",
+                cash_all_time="заглушка",
+                balance="заглушка"
+            )
+
+            kb = get_create_invite_keyboard(current_lang, i18n)
+
+            if settings.PHOTO_ID_GIFT_BRO:
+                await callback.message.edit_media(
+                    media=InputMediaPhoto(
+                        media=settings.PHOTO_ID_GIFT_BRO,
+                        caption=my_statics_message
+                    ),
+                    reply_markup=kb
+                )
+            else:
+                await callback.message.answer(
+                    my_statics_message,
+                    reply_markup=kb,
+                    disable_web_page_preview=True
+                )
+        except Exception as e:
+            logging.error(f"Error in referral MY_LINK: {e}")
+            await callback.answer("Произошла ошибка", show_alert=True)
+    elif action == "share_message":
         try:
             bot_info = await bot.get_me()
             bot_username = bot_info.username
