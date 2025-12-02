@@ -139,7 +139,13 @@ async def referral_action_handler(callback: types.CallbackQuery, settings: Setti
             inviter_user_id = callback.from_user.id
             referral_link = referral_service.generate_referral_link(bot_username, inviter_user_id)
 
-            my_statics_message = _("referral_info_text", ref_link=referral_link, balance="заглушка")
+            my_statics_message = _(
+                "referral_info_text",
+                ref_link=referral_link,
+                count_invited="заглушка",
+                cash_all_time="заглушка",
+                balance="заглушка"
+            )
 
             kb = get_create_invite_keyboard(current_lang, i18n)
 
