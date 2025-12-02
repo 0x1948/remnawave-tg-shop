@@ -309,8 +309,8 @@ def get_create_invite_keyboard(lang: str, i18n_instance) -> InlineKeyboardMarkup
                    callback_data="referral_action:share_message")
     builder.button(text=_(key="referral_get_payout_button"),
                    callback_data="referral_action:get_payout")
-    builder.button(text=_(key="menu_own_button"),
-                   callback_data="main_action:back_to_main")
+    builder.button(text=_(key="back_to_main_menu_button"),
+                   callback_data="main_action:referral")
     builder.adjust(1)
     return builder.as_markup()
 
