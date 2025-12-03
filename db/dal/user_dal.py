@@ -39,6 +39,10 @@ async def get_user_by_panel_uuid(
     result = await session.execute(stmt)
     return result.scalar_one_or_none()
 
+async def count_referrals(session: AsyncSession, user_id: int) -> int:
+    stmt = select(func.count(User.user_id)).where(User.referred_by_id == user_id)
+    result = await session.execute(stmt)
+    return result.scalar_one()
 
 ## Removed unused generic get_user helper to keep DAL explicit and simple
 
