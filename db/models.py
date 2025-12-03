@@ -20,7 +20,7 @@ class User(Base):
     language_code = Column(String, default="ru")
     registration_date = Column(DateTime(timezone=True),
                                server_default=func.now())
-    #balance = Column(Numeric(18, 6), nullable=False, default=0)
+    balance = Column(Numeric(18, 6), nullable=False, default=0)
     is_banned = Column(Boolean, default=False)
     panel_user_uuid = Column(String, nullable=True, unique=True, index=True)
     referred_by_id = Column(BigInteger,
