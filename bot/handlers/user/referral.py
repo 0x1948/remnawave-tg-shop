@@ -139,6 +139,7 @@ async def referral_action_handler(callback: types.CallbackQuery, settings: Setti
                 return
 
             db_user = await user_dal.get_user_by_id(session, callback.from_user.id)
+            referrals_count = await user_dal.count_referrals(session, callback.from_user.id)
 
             inviter_user_id = callback.from_user.id
             referral_link = referral_service.generate_referral_link(bot_username, inviter_user_id)
@@ -146,8 +147,8 @@ async def referral_action_handler(callback: types.CallbackQuery, settings: Setti
             my_statics_message = _(
                 "referral_info_text",
                 ref_link=referral_link,
-                count_invited="заглушка",
-                cash_all_time="1",
+                count_invited=f"{referrals_count} чел.",
+                cash_all_time="еще не сделано",
                 balance=db_user.balance
             )
 

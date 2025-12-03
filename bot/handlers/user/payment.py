@@ -173,7 +173,7 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
 
     try:
         yk_payment_id_from_hook = payment_info_from_webhook.get("id")
-        # Try to capture and save payment method for future charges if available
+        # Try to capture and save payment method for future charges
         try:
             payment_method = payment_info_from_webhook.get("payment_method")
             if getattr(settings, 'YOOKASSA_AUTOPAYMENTS_ENABLED', False) and isinstance(payment_method, dict) and payment_method.get("saved", False):
