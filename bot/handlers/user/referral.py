@@ -171,6 +171,18 @@ async def referral_action_handler(callback: types.CallbackQuery, settings: Setti
         except Exception as e:
             logging.error(f"Error in referral MY_LINK: {e}")
             await callback.answer("Произошла ошибка", show_alert=True)
+    elif action == "get_payout":
+        try:
+            db_user = await user_dal.get_user_by_id(session, callback.from_user.id)
+
+            if db_user.balance < 1000:
+                await callback.answer("Недостаточно средств! Вывод доступен от 1000 ₽")
+            else:
+                await callback.answer("Скоро!")
+        except Exception as e:
+            logging.error(f"Error in referral GET_PAYOUT: {e}")
+            await callback.answer("Произошла ошибка", show_alert=True)
+
     elif action == "share_message":
         try:
             bot_info = await bot.get_me()
