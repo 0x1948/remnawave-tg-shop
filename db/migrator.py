@@ -47,6 +47,14 @@ def _migration_0001_add_channel_subscription_fields(connection: Connection) -> N
     for stmt in statements:
         connection.execute(text(stmt))
 
+def _migration_0002_add_user_balance(connection: Connection) -> None:
+    inspector = inspect(connection)
+    columns = {col["name"] for col in inspector.get_columns("users")}
+
+    if "balance" not in columns:
+        connection.execute(
+            text("ALTER TABLE users ADD COLUMN balance BIGINT DEFAULT 0")
+        )
 
 MIGRATIONS: List[Migration] = [
     Migration(
@@ -54,6 +62,11 @@ MIGRATIONS: List[Migration] = [
         description="Add columns to track required channel subscription verification",
         upgrade=_migration_0001_add_channel_subscription_fields,
     ),
+    Migration(
+        id="0002_add_user_balance",
+        description="Add balance column to users table",
+        upgrade=_migration_0002_add_user_balance,
+    )
 ]
 
 
