@@ -9,6 +9,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from config.settings import Settings
 from bot.services.referral_service import ReferralService
 
+from db.dal import user_dal
+
 from bot.keyboards.inline.user_keyboards import get_back_to_main_menu_markup, get_create_invite_keyboard
 from bot.middlewares.i18n import JsonI18n
 
@@ -136,6 +138,8 @@ async def referral_action_handler(callback: types.CallbackQuery, settings: Setti
                 await callback.answer("Ошибка получения имени бота", show_alert=True)
                 return
 
+            db_user = await user_dal.get_user_by_id(session, callback.from_user.id)
+
             inviter_user_id = callback.from_user.id
             referral_link = referral_service.generate_referral_link(bot_username, inviter_user_id)
 
@@ -144,7 +148,7 @@ async def referral_action_handler(callback: types.CallbackQuery, settings: Setti
                 ref_link=referral_link,
                 count_invited="заглушка",
                 cash_all_time="заглушка",
-                balance="заглушка"
+                balance=db_user.balance
             )
 
             kb = get_create_invite_keyboard(current_lang, i18n)
