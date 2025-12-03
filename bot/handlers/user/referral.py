@@ -147,7 +147,7 @@ async def referral_action_handler(callback: types.CallbackQuery, settings: Setti
                 "referral_info_text",
                 ref_link=referral_link,
                 count_invited="заглушка",
-                cash_all_time="заглушка",
+                cash_all_time="1",
                 balance=db_user.balance
             )
 
