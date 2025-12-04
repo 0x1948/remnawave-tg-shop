@@ -144,6 +144,8 @@ class Settings(BaseSettings):
         description="When true, referral bonuses (for inviter and referee) are applied only once per invited user – on their first successful payment."
     )
 
+    REFERRAL_PERCENT: Optional[int] = Field(default=40)
+
     PANEL_API_URL: Optional[str] = None
     PANEL_API_KEY: Optional[str] = None
     USER_TRAFFIC_LIMIT_GB: Optional[float] = Field(default=0.0)
