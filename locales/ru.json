@@ -95,7 +95,7 @@
   "referral_share_message_button": "\uD83D\uDD17 Моя ссылка",
   "referral_create_invite_button": "✉\uFE0F Создать приглашение",
   "referral_get_payout_button": "\uD83D\uDCB8 Запросить вывод",
-  "referral_info_text": "<b>Ваша партнерская ссылка:</b> <code>{ref_link}</code>\n\n<blockquote>Просто отправь её другу, либо нажми кнопку <b>\"✉\uFE0F Создать приглашение\"</b> ниже.</blockquote>\n\n<blockquote><b>Статистика:\n├ </b>Кол-во приглашенных: <code>{count_invited}</code>\n<b>└</b> Доход за все время: <code>{cash_all_time}</code></blockquote>\n\n<b>Ваш баланс:</b> <code>{balance}₽</code>\n",
+  "referral_info_text": "<b>Ваша партнерская ссылка:</b> <code>{ref_link}</code>\n\n<blockquote>Просто отправь её другу, либо нажми кнопку <b>\"✉\uFE0F Создать приглашение\"</b> ниже.</blockquote>\n\n<blockquote><b>Статистика:\n├ </b>Кол-во приглашенных: <code>{count_invited}</code>\n<b>└</b> Доход за все время: <code>{cash_all_time}₽</code></blockquote>\n\n<b>Ваш баланс:</b> <code>{balance}₽</code>\n",
   "referral_friend_message": "Привет! Приглашаю тебя попробовать  <b>Voron VPN</b>!\n\nТам очень много стран, есть полностью бесплатная версия, а платная подписка всего 149 рублей в месяц.\n\n<blockquote>По моей ссылке ты получишь в подарок 7 дней бесплатного доступа.</blockquote>\n",
   "referral_friend_message_button": "Забрать подарок",
   "friend_placeholder": "друг",
