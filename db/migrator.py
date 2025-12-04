@@ -56,6 +56,24 @@ def _migration_0002_add_user_balance(connection: Connection) -> None:
             text("ALTER TABLE users ADD COLUMN balance BIGINT DEFAULT 0")
         )
 
+def _migration_0003_add_user_total_earned(connection: Connection) -> None:
+    inspector = inspect(connection)
+    columns = {col["name"] for col in inspector.get_columns("users")}
+
+    if "total_earned" not in columns:
+        connection.execute(
+            text("ALTER TABLE users ADD COLUMN total_earned BIGINT DEFAULT 0")
+        )
+
+def _migration_0004_add_user_referral_reward_applied(connection: Connection) -> None:
+    inspector = inspect(connection)
+    columns = {col["name"] for col in inspector.get_columns("payments")}
+
+    if "referral_reward_applied" not in columns:
+        connection.execute(
+            text("ALTER TABLE payments ADD COLUMN referral_reward_applied BIGINT DEFAULT FALSE")
+        )
+
 MIGRATIONS: List[Migration] = [
     Migration(
         id="0001_add_channel_subscription_fields",
@@ -66,6 +84,16 @@ MIGRATIONS: List[Migration] = [
         id="0002_add_user_balance",
         description="Add balance column to users table",
         upgrade=_migration_0002_add_user_balance,
+    ),
+    Migration(
+        id="0003_add_user_total_earned",
+        description="Add total_earned column to users table",
+        upgrade=_migration_0003_add_user_total_earned,
+    ),
+    Migration(
+        id="0004_add_user_referral_reward_applied",
+        description="Add referral_reward_applied column to users table",
+        upgrade=_migration_0004_add_user_referral_reward_applied,
     )
 ]
 

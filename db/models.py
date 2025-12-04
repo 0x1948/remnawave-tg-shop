@@ -22,6 +22,7 @@ class User(Base):
     registration_date = Column(DateTime(timezone=True),
                                server_default=func.now())
     balance = Column(Numeric(18, 6), nullable=False, default=0)
+    total_earned = Column(Numeric(18, 6), nullable=False, default=0)
     is_banned = Column(Boolean, default=False)
     panel_user_uuid = Column(String, nullable=True, unique=True, index=True)
     referred_by_id = Column(BigInteger,
@@ -107,6 +108,7 @@ class Payment(Base):
     status = Column(String, nullable=False, index=True)
     description = Column(String, nullable=True)
     subscription_duration_months = Column(Integer, nullable=True)
+    referral_reward_applied = Column(Boolean, default=False)
     promo_code_id = Column(Integer,
                            ForeignKey("promo_codes.promo_code_id"),
                            nullable=True)
