@@ -71,7 +71,7 @@ def _migration_0004_add_user_referral_reward_applied(connection: Connection) -> 
 
     if "referral_reward_applied" not in columns:
         connection.execute(
-            text("ALTER TABLE payments ADD COLUMN referral_reward_applied BIGINT DEFAULT FALSE")
+            text("ALTER TABLE payments ADD COLUMN referral_reward_applied BOOLEAN DEFAULT FALSE")
         )
 
 MIGRATIONS: List[Migration] = [
