@@ -123,6 +123,8 @@ def get_subscribe_ex_kb(lang: str, i18n_instance, active, settings: Settings) ->
     builder.row(InlineKeyboardButton(text=_(key="back_to_main_menu_button"),
                                      callback_data="main_action:back_to_start"))
 
+    builder.adjust(1)
+
     return builder.as_markup()
 
 def get_help_keyboard(

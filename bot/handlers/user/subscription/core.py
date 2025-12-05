@@ -144,7 +144,7 @@ async def my_subscription_command_handler(
                 )
 
 
-    if not if_its_ex:
+    if if_its_ex == False:
         text = get_text(
             "my_subscription_details",
             ider=event.from_user.id,
@@ -165,7 +165,8 @@ async def my_subscription_command_handler(
             "my_subscription_details_ex",
             status = active.get("status_from_panel", get_text("status_active")).capitalize(),
             end_date = end_date.strftime("%Y-%m-%d") if end_date else "N/A",
-            days_left = f"{max(0, days_left)} дней"
+            days_left = f"{max(0, days_left)} дней",
+            sub_url = active.get("config_link") or get_text("config_link_not_available")
         )
 
     base_markup = get_back_to_main_menu_markup(current_lang, i18n)
