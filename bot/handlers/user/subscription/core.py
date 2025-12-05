@@ -146,21 +146,17 @@ async def my_subscription_command_handler(
     status_map = {"active": "status_active", "expired": "status_inactive", "inactive": "status_inactive"}
     status = get_text(status_map.get(active.get("status_from_panel", "active").lower(), "status_inactive"))
 
+    status_autopay = get_text("status_autopay_enabled") if active.get("auto_renew_enabled") == True else get_text("status_autopay_disabled")
+
     if if_its_ex == False:
         text = get_text(
             "my_subscription_details",
             ider=event.from_user.id,
+            autopay=status_autopay,
             end_date=end_date.strftime("%Y-%m-%d") if end_date else "N/A",
             days_left=max(0, days_left),
             status=status,
-            config_link=active.get("config_link") or get_text("config_link_not_available"),
-            traffic_limit=(
-                f"{active['traffic_limit_bytes'] / 2 ** 30:.2f} GB" if active.get("traffic_limit_bytes") else get_text(
-                    "traffic_unlimited")),
-            traffic_used=(
-                f"{active['traffic_used_bytes'] / 2 ** 30:.2f} GB" if active.get(
-                    "traffic_used_bytes") is not None else get_text("traffic_na")
-            ),
+            sub_url=active.get("config_link") or get_text("config_link_not_available"),
         )
     else:
         text = get_text(
