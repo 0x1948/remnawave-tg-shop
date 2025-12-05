@@ -170,6 +170,7 @@ class NotificationService:
                 "log_referral_suffix",
                 default=" (реферал от {referrer_link})",
                 referrer_link=referrer_link,
+                referrer_id=referred_by_id
             )
         
         message = _(
