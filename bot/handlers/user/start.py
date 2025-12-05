@@ -513,8 +513,8 @@ async def send_terms_text(event: Union[types.Message, types.CallbackQuery], i18n
 
     if isinstance(event, types.CallbackQuery):
         try:
-            if settings.PHOTO_ID_MAIN_MENU:
-                await target_message_obj.edit_media(media=InputMediaPhoto(media=settings.PHOTO_ID_MAIN_MENU, caption=text), reply_markup=keyboard, disable_web_page_preview=True)
+            if settings.PHOTO_ID_UR_INFORM:
+                await target_message_obj.edit_media(media=InputMediaPhoto(media=settings.PHOTO_ID_UR_INFORM, caption=text), reply_markup=keyboard, disable_web_page_preview=True)
             else:
                 await target_message_obj.edit_text(text=text, reply_markup=keyboard, disable_web_page_preview=True)
         except Exception as e:

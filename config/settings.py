@@ -1,4 +1,6 @@
 import logging
+from email.policy import default
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field, ValidationError, computed_field, field_validator
 from typing import Optional, List, Dict, Any
@@ -37,6 +39,7 @@ class Settings(BaseSettings):
     PHOTO_ID_TEST_ACTIVATED: str = Field(default=None)
     PHOTO_ID_EXPIRED_24_HOURS: str = Field(default=None)
     PHOTO_ID_CONNECT_VPN: str = Field(default=None)
+    PHOTO_ID_UR_INFORM: str = Field(default=None)
 
 
 
