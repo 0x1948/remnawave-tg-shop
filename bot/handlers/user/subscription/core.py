@@ -12,6 +12,7 @@ from bot.keyboards.inline.user_keyboards import (
     get_subscription_options_keyboard,
     get_back_to_main_menu_markup,
     get_autorenew_confirm_keyboard,
+    get_subscribe_ex_kb
 )
 from bot.services.subscription_service import SubscriptionService
 from bot.services.panel_api_service import PanelApiService
@@ -72,7 +73,6 @@ async def display_subscription_options(event: Union[types.Message, types.Callbac
     else:
         await target_message_obj.answer(text_content, reply_markup=reply_markup)
 
-
 @router.callback_query(F.data == "main_action:subscribe")
 async def reshow_subscription_options_callback(callback: types.CallbackQuery, i18n_data: dict, settings: Settings, session: AsyncSession):
     await display_subscription_options(callback, i18n_data, settings, session)
@@ -86,6 +86,7 @@ async def my_subscription_command_handler(
     subscription_service: SubscriptionService,
     session: AsyncSession,
     bot: Bot,
+    if_its_ex: bool = False
 ):
     target = event.message if isinstance(event, types.CallbackQuery) else event
     current_lang = i18n_data.get("current_language", settings.DEFAULT_LANGUAGE)
@@ -142,21 +143,30 @@ async def my_subscription_command_handler(
                     get_text("subscription_tribute_notice_with_link", link=link) if link else get_text("subscription_tribute_notice")
                 )
 
-    text = get_text(
-        "my_subscription_details",
-        ider=event.from_user.id,
-        end_date=end_date.strftime("%Y-%m-%d") if end_date else "N/A",
-        days_left=max(0, days_left),
-        status=active.get("status_from_panel", get_text("status_active")).capitalize(),
-        config_link=active.get("config_link") or get_text("config_link_not_available"),
-        traffic_limit=(
-            f"{active['traffic_limit_bytes'] / 2 ** 30:.2f} GB" if active.get("traffic_limit_bytes") else get_text(
-                "traffic_unlimited")),
-        traffic_used=(
-            f"{active['traffic_used_bytes'] / 2 ** 30:.2f} GB" if active.get(
-                "traffic_used_bytes") is not None else get_text("traffic_na")
-        ),
-    )
+
+    if not if_its_ex:
+        text = get_text(
+            "my_subscription_details",
+            ider=event.from_user.id,
+            end_date=end_date.strftime("%Y-%m-%d") if end_date else "N/A",
+            days_left=max(0, days_left),
+            status=active.get("status_from_panel", get_text("status_active")).capitalize(),
+            config_link=active.get("config_link") or get_text("config_link_not_available"),
+            traffic_limit=(
+                f"{active['traffic_limit_bytes'] / 2 ** 30:.2f} GB" if active.get("traffic_limit_bytes") else get_text(
+                    "traffic_unlimited")),
+            traffic_used=(
+                f"{active['traffic_used_bytes'] / 2 ** 30:.2f} GB" if active.get(
+                    "traffic_used_bytes") is not None else get_text("traffic_na")
+            ),
+        )
+    else:
+        text = get_text(
+            "my_subscription_details_ex",
+            status = active.get("status_from_panel", get_text("status_active")).capitalize(),
+            end_date = end_date.strftime("%Y-%m-%d") if end_date else "N/A",
+            days_left = f"{max(0, days_left)} дней"
+        )
 
     base_markup = get_back_to_main_menu_markup(current_lang, i18n)
     kb = base_markup.inline_keyboard
@@ -262,6 +272,9 @@ async def my_subscription_command_handler(
     except Exception:
         pass
     markup = InlineKeyboardMarkup(inline_keyboard=kb)
+
+    if if_its_ex:
+        markup = get_subscribe_ex_kb(current_lang, i18n, active, settings)
 
     if isinstance(event, types.CallbackQuery):
         try:

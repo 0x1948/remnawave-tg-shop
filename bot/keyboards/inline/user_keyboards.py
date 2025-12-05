@@ -19,10 +19,16 @@ def get_main_start_inline_keyboard(lang: str,
                                  callback_data="main_action:request_trial")
         )
 
-    builder.row(
-        InlineKeyboardButton(text=_(key="menu_subscribe_inline"),
-                             callback_data="main_action:subscribe")
-    )
+    if not show_trial_button:
+        builder.row(
+            InlineKeyboardButton(text=_(key="menu_subscribe_inline"),
+                                 callback_data="main_action:subscribe_ex")
+        )
+    else:
+        builder.row(
+            InlineKeyboardButton(text=_(key="menu_subscribe_inline"),
+                                 callback_data="main_action:subscribe")
+        )
 
     builder.row(
         InlineKeyboardButton(text=_(key="menu_own_button"),
@@ -89,6 +95,33 @@ def get_main_menu_inline_keyboard(
 
     builder.row(InlineKeyboardButton(text=_(key="back_to_main_menu_button"),
                    callback_data="main_action:back_to_start"))
+
+    return builder.as_markup()
+
+def get_subscribe_ex_kb(lang: str, i18n_instance, active, settings: Settings) -> InlineKeyboardMarkup:
+    _ = lambda key, **kwargs: i18n_instance.gettext(lang, key, **kwargs)
+    builder = InlineKeyboardBuilder()
+
+    if settings.SUBSCRIPTION_MINI_APP_URL:
+        builder.button(
+            text=_("connect_button"),
+            web_app=WebAppInfo(url=settings.SUBSCRIPTION_MINI_APP_URL),
+        )
+    else:
+        cfg_link_val = (active or {}).get("config_link")
+        if cfg_link_val:
+            builder.button(
+                text=_("connect_button"),
+                url=cfg_link_val,
+            )
+
+    builder.button(
+        text=_(key="inline_new_time_vpn_2"),
+        callback_data="main_action:subscribe"
+    )
+
+    builder.row(InlineKeyboardButton(text=_(key="back_to_main_menu_button"),
+                                     callback_data="main_action:back_to_start"))
 
     return builder.as_markup()
 
