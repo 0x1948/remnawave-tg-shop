@@ -437,7 +437,7 @@
   "admin_sync_not_found_in_db": "\n❌ Не найдено в БД: {count}",
   "admin_payments_pagination_info": "📊 Показано {shown} из {total} платежей (стр. {current_page}/{total_pages})",
   "my_subscription_details": "<b>📟 Ваш ID: <code>{ider}</code></b>\n\n<b>Информация о подписке:</b>\n<b>├</b> Статус: {status} \n<b>├</b> Оплачена до: <b>{end_date}</b>\n<b>├</b> Осталось дней: {days_left}\n<b>├</b> Лимит: {traffic_limit}\n<b>└</b> Использовано: {traffic_used}\n\n🔑 Ваш ключ: <b>{config_link}</b>\n\n<b>Для подключения к VPN используйте кнопку снизу. 👇</b>",
-  "my_subscription_details_ex": "<b>Ваша подписка Voron VPN:</b>\n\n<blockquote><b>├</b> Статус: {status}\n<b>└</b> Оплачена до: {end_date}, {days_left}</blockquote>\n\n<b>Ваши ключи:</b> {sub_url}\n\n<blockquote><b>Для подключения к VPN используйте кнопку снизу.</b></blockquote>",
+  "my_subscription_details_ex": "<b>Ваша подписка Voron VPN:</b>\n\n<blockquote><b>├</b> Статус: <code>{status}</code>\n<b>└</b> Оплачена до: <code>{end_date}, {days_left}</code></blockquote>\n\n<b>Ваши ключи:</b> {sub_url}\n\n<blockquote><b>Для подключения к VPN используйте кнопку снизу.</b></blockquote>",
   "autorenew_enable_button": "✔\uFE0F Включить автопродление",
   "autorenew_disable_button": "✖\uFE0F Отключить автопродление",
   "subscription_autorenew_updated": "Настройки автопродления обновлены.",
