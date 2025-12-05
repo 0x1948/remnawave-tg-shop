@@ -84,6 +84,9 @@ def get_main_menu_inline_keyboard(
             callback_data="main_action:gift_vpn"
         )
     )
+    rw_row.append(
+        InlineKeyboardButton(text=_(key="menu_apply_promo_button"), callback_data="main_action:apply_promo")
+    )
     builder.row(*rw_row)
 
     ######################
