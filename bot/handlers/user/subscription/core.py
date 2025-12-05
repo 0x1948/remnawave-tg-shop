@@ -103,6 +103,7 @@ async def my_subscription_command_handler(
         return
 
     active = await subscription_service.get_active_subscription_details(session, event.from_user.id)
+    local_sub = await subscription_dal.get_active_subscription_by_user_id(session, event.from_user.id)
 
     if not active:
         text = get_text("subscription_not_active", ider=event.message.from_user.id)
@@ -134,7 +135,6 @@ async def my_subscription_command_handler(
     days_left = (end_date.date() - datetime.now().date()).days if end_date else 0
     tribute_hint = ""
     if active.get("status_from_panel", "").lower() == "active":
-        local_sub = await subscription_dal.get_active_subscription_by_user_id(session, event.from_user.id)
         if local_sub:
             if local_sub.provider == "tribute":
                 link = None
@@ -146,8 +146,8 @@ async def my_subscription_command_handler(
     status_map = {"active": "status_active", "expired": "status_inactive", "inactive": "status_inactive"}
     status = get_text(status_map.get(active.get("status_from_panel", "active").lower(), "status_inactive"))
 
-    logging.info(active.get("auto_renew_enabled"))
-    status_autopay = get_text("status_autopay_enabled") if active.get("auto_renew_enabled") == True else get_text("status_autopay_disabled")
+    logging.info(local_sub.auto_renew_enabled)
+    status_autopay = get_text("status_autopay_enabled") if local_sub.auto_renew_enabled == True else get_text("status_autopay_disabled")
 
     if if_its_ex == False:
         text = get_text(
