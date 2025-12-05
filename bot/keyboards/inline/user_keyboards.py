@@ -116,7 +116,7 @@ def get_subscribe_ex_kb(lang: str, i18n_instance, active, settings: Settings) ->
             )
 
     builder.button(
-        text=_(key="inline_new_time_vpn_2"),
+        text=_(key="inline_new_time_vpn"),
         callback_data="main_action:subscribe"
     )
 
