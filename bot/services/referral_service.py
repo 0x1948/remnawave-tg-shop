@@ -8,7 +8,7 @@ from datetime import datetime, timezone, timedelta
 from config.settings import Settings
 from db.dal import user_dal
 from db.dal import payment_dal
-from db.models import User
+from db.models import User, Payment
 from db.dal import subscription_dal
 from bot.middlewares.i18n import JsonI18n
 from .subscription_service import SubscriptionService
@@ -256,6 +256,36 @@ class ReferralService:
                 exc_info=True)
 
             raise
+
+    async def apply_referral_reward(self, session: AsyncSession, payment_id: int, user_id: int):
+        from .payment_dal import get_payment_by_db_id
+        payment = await get_payment_by_db_id(session, payment_id)
+
+        if payment.referral_reward_applied:
+            return
+
+        user = await user_dal.get_user_by_id(session, user_id)
+        if not user or not user.referred_by_id:
+            return
+
+        referrer = await session.get(User, user.referred_by_id)
+        if not referrer:
+            return
+
+        if payment.amount <= 0:
+            return
+
+        reward_percent = self.settings.REFERRAL_PERCENT / 100
+        reward = payment.amount * reward_percent
+
+        referrer.referral_balance = (referrer.referral_balance or 0) + reward
+        referrer.referral_total_earned = (referrer.referral_total_earned or 0) + reward
+
+        payment.referral_reward_applied = True
+
+        session.add(referrer)
+        session.add(payment)
+        await session.commit()
 
     def generate_referral_link(self, bot_username: str,
                                inviter_user_id: int) -> str:

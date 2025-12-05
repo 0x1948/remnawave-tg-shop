@@ -251,24 +251,13 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
 
         base_subscription_end_date = activation_details['end_date']
         final_end_date_for_user = base_subscription_end_date
-        applied_promo_bonus_days = activation_details.get(
-            "applied_promo_bonus_days", 0)
 
-        applied_referee_bonus_days_from_referral: Optional[int] = None
         if not float(subscription_months_str) == 0.5:
-            referral_bonus_info = await referral_service.apply_referral_bonuses_for_payment(
-                session,
-                user_id,
-                if_test_period_months,
-                current_payment_db_id=payment_db_id,
-                skip_if_active_before_payment=False,
+            await referral_service.apply_referral_reward(
+                session=session,
+                payment=payment_db_id,
+                user_id=user_id
             )
-            if referral_bonus_info and referral_bonus_info.get(
-                    "referee_new_end_date"):
-                final_end_date_for_user = referral_bonus_info[
-                    "referee_new_end_date"]
-                applied_referee_bonus_days_from_referral = referral_bonus_info.get(
-                    "referee_bonus_applied_days")
 
         # Use user's DB language for all user-facing messages
         user_lang = db_user.language_code if db_user and db_user.language_code else settings.DEFAULT_LANGUAGE
@@ -292,36 +281,36 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
                 user_lang, i18n, settings, config_link, preserve_message=True
             )
         else:
-            if applied_referee_bonus_days_from_referral and final_end_date_for_user:
-                inviter_name_display = _("friend_placeholder")
-                if db_user and db_user.referred_by_id:
-                    inviter = await user_dal.get_user_by_id(
-                        session, db_user.referred_by_id)
-                    if inviter:
-                        safe_name = sanitize_display_name(inviter.first_name) if inviter.first_name else None
-                        if safe_name:
-                            inviter_name_display = safe_name
-                        elif inviter.username:
-                            inviter_name_display = username_for_display(inviter.username, with_at=False)
-
-                details_message = _(
-                    "payment_successful_with_referral_bonus_full",
-                    months=subscription_months,
-                    base_end_date=base_subscription_end_date.strftime('%Y-%m-%d'),
-                    bonus_days=applied_referee_bonus_days_from_referral,
-                    final_end_date=final_end_date_for_user.strftime('%Y-%m-%d'),
-                    inviter_name=inviter_name_display,
-                    config_link=config_link,
-                )
-            elif applied_promo_bonus_days > 0 and final_end_date_for_user:
-                details_message = _(
-                    "payment_successful_with_promo_full",
-                    months=subscription_months,
-                    bonus_days=applied_promo_bonus_days,
-                    end_date=final_end_date_for_user.strftime('%Y-%m-%d'),
-                    config_link=config_link,
-                )
-            elif final_end_date_for_user:
+            # if applied_referee_bonus_days_from_referral and final_end_date_for_user:
+            #     inviter_name_display = _("friend_placeholder")
+            #     if db_user and db_user.referred_by_id:
+            #         inviter = await user_dal.get_user_by_id(
+            #             session, db_user.referred_by_id)
+            #         if inviter:
+            #             safe_name = sanitize_display_name(inviter.first_name) if inviter.first_name else None
+            #             if safe_name:
+            #                 inviter_name_display = safe_name
+            #             elif inviter.username:
+            #                 inviter_name_display = username_for_display(inviter.username, with_at=False)
+            #
+            #     details_message = _(
+            #         "payment_successful_with_referral_bonus_full",
+            #         months=subscription_months,
+            #         base_end_date=base_subscription_end_date.strftime('%Y-%m-%d'),
+            #         bonus_days=applied_referee_bonus_days_from_referral,
+            #         final_end_date=final_end_date_for_user.strftime('%Y-%m-%d'),
+            #         inviter_name=inviter_name_display,
+            #         config_link=config_link,
+            #     )
+            # if applied_promo_bonus_days > 0 and final_end_date_for_user:
+            #     details_message = _(
+            #         "payment_successful_with_promo_full",
+            #         months=subscription_months,
+            #         bonus_days=applied_promo_bonus_days,
+            #         end_date=final_end_date_for_user.strftime('%Y-%m-%d'),
+            #         config_link=config_link,
+            #     )
+            if final_end_date_for_user:
                 if its_test_period:
                     details_message = _(
                         "payment_trial_successful",
@@ -382,7 +371,7 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
                 amount=payment_value,
                 currency=settings.DEFAULT_CURRENCY_SYMBOL,
                 months=int(subscription_months),
-                payment_provider="yookassa",  # This is specifically for YooKassa webhook
+                payment_provider="yookassa",
                 username=user.username if user else None
             )
         except Exception as e:
