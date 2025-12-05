@@ -664,6 +664,54 @@ async def start_command_handler(message: types.Message,
                     f"New user {user_id} added to session. Referred by: {referred_by_user_id or 'N/A'}."
                 )
 
+                # ========== НОВЫЙ БЛОК: Начисление бонусов за реферальную систему ==========
+                if referred_by_user_id:
+                    bonus_days = 7
+                    try:
+                        new_user_end_date = await subscription_service.extend_active_subscription_days(
+                            session=session,
+                            user_id=user_id,
+                            bonus_days=bonus_days,
+                            reason=f"Реферальный бонус за регистрацию по ссылке пользователя {referred_by_user_id}"
+                        )
+                        referrer_end_date = await subscription_service.extend_active_subscription_days(
+                            session=session,
+                            user_id=referred_by_user_id,
+                            bonus_days=bonus_days,
+                            reason=f"Реферальный бонус за приглашение пользователя {user_id}"
+                        )
+
+                        await session.commit()
+
+                        logging.info(
+                            f"Referral bonuses applied: New user {user_id} -> {new_user_end_date}, "
+                            f"Referrer {referred_by_user_id} -> {referrer_end_date}"
+                        )
+
+                        try:
+                            bonus_notification = i18n.gettext(
+                                current_lang,
+                                "referral_bonus_notification",
+                                name=user.first_name,
+                                bonus_days=bonus_days
+                            ) if i18n else f"Вы получили {bonus_days} дней за приглашение друга!"
+
+                            await message.bot.send_message(
+                                chat_id=referred_by_user_id,
+                                text=bonus_notification
+                            )
+                        except Exception as notify_error:
+                            logging.warning(f"Failed to notify referrer {referred_by_user_id}: {notify_error}")
+
+                    except Exception as bonus_error:
+                        logging.error(
+                            f"Failed to apply referral bonuses for user {user_id} and referrer {referred_by_user_id}: {bonus_error}",
+                            exc_info=True
+                        )
+                        # Не откатываем транзакцию - пользователь уже создан
+                        # Просто логируем ошибку начисления бонусов
+                # ========== КОНЕЦ БЛОКА ==========
+
                 # Send notification about new user registration
                 try:
                     from bot.services.notification_service import NotificationService
