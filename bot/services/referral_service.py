@@ -259,32 +259,42 @@ class ReferralService:
 
     async def apply_referral_reward(self, session: AsyncSession, payment_id: int, user_id: int):
         from .payment_dal import get_payment_by_db_id
-        payment = await get_payment_by_db_id(session, payment_id)
 
+        # получаем платеж
+        payment = await get_payment_by_db_id(session, payment_id)
+        if not payment:
+            return
+
+        # защита от повторного начисления
         if payment.referral_reward_applied:
             return
 
+        # получаем пользователя
         user = await user_dal.get_user_by_id(session, user_id)
         if not user or not user.referred_by_id:
             return
 
-        referrer = await session.get(User, user.referred_by_id)
+        # получаем реферера
+        referrer = await user_dal.get_user_by_id(session, user.referred_by_id)
         if not referrer:
             return
 
+        # сумма должна быть > 0
         if payment.amount <= 0:
             return
 
+        # расчет награды
         reward_percent = self.settings.REFERRAL_PERCENT / 100
         reward = payment.amount * reward_percent
 
-        referrer.referral_balance = (referrer.referral_balance or 0) + reward
-        referrer.referral_total_earned = (referrer.referral_total_earned or 0) + reward
+        # обновляем баланс реферера
+        referrer.balance = (referrer.balance or 0) + reward
+        referrer.total_earned = (referrer.total_earned or 0) + reward
 
+        # помечаем платеж как обработанный
         payment.referral_reward_applied = True
 
-        session.add(referrer)
-        session.add(payment)
+        # commit — этого достаточно, session.add не требуется
         await session.commit()
 
     def generate_referral_link(self, bot_username: str,
