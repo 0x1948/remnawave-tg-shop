@@ -146,6 +146,7 @@ async def my_subscription_command_handler(
     status_map = {"active": "status_active", "expired": "status_inactive", "inactive": "status_inactive"}
     status = get_text(status_map.get(active.get("status_from_panel", "active").lower(), "status_inactive"))
 
+    logging.info(active.get("auto_renew_enabled"))
     status_autopay = get_text("status_autopay_enabled") if active.get("auto_renew_enabled") == True else get_text("status_autopay_disabled")
 
     if if_its_ex == False:
