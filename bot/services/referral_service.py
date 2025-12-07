@@ -258,7 +258,7 @@ class ReferralService:
             raise
 
     async def apply_referral_reward(self, session: AsyncSession, payment_id: int, user_id: int):
-        from .payment_dal import get_payment_by_db_id
+        from db.dal.payment_dal import get_payment_by_db_id
 
         # получаем платеж
         payment = await get_payment_by_db_id(session, payment_id)
