@@ -105,7 +105,7 @@ async def my_subscription_command_handler(
     active = await subscription_service.get_active_subscription_details(session, event.from_user.id)
     local_sub = await subscription_dal.get_active_subscription_by_user_id(session, event.from_user.id)
 
-    if not active:
+    if not active or not local_sub:
         text = get_text("subscription_not_active", ider=event.message.from_user.id)
 
         buy_button = InlineKeyboardButton(
