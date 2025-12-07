@@ -255,7 +255,7 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
         if not float(subscription_months_str) == 0.5:
             await referral_service.apply_referral_reward(
                 session=session,
-                payment=payment_db_id,
+                payment_id=payment_db_id,
                 user_id=user_id
             )
 
