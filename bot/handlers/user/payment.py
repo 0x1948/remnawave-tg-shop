@@ -269,7 +269,7 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
 
         end_date, total_days = calc_months_forward2(int(subscription_months))
 
-        # For auto-renew charges, avoid re-sending config link; send concise message
+        # For auto-renew charges, avoid re-sending config link; send concise messag
         if is_auto_renew and final_end_date_for_user:
             details_message = _(
                 "yookassa_auto_renewal",
