@@ -33,7 +33,7 @@ class NotificationService:
     ) -> str:
         base_display = display_name_or_fallback(first_name, f"ID {user_id}")
         if username:
-            base_display = f"{base_display} ({username_for_display(username)})"
+            base_display = f"{base_display} (@{username_for_display(username)})"
         return base_display
 
     @staticmethod
