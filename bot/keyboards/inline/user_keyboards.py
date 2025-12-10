@@ -67,6 +67,13 @@ def get_main_menu_inline_keyboard(
         callback_data="main_action:referral")
     builder.row(referral_button)
 
+    builder.row(
+        InlineKeyboardButton(
+            text=_(key="menu_gift"),
+            callback_data="main_action:gift_vpn"
+        )
+    )
+
     #####################
 
     rw_row = []
@@ -80,12 +87,9 @@ def get_main_menu_inline_keyboard(
         )
     rw_row.append(
         InlineKeyboardButton(
-            text=_(key="menu_gift"),
-            callback_data="main_action:gift_vpn"
+            text=_(key="menu_apply_promo_button"),
+            callback_data="main_action:apply_promo"
         )
-    )
-    rw_row.append(
-        InlineKeyboardButton(text=_(key="menu_apply_promo_button"), callback_data="main_action:apply_promo")
     )
     builder.row(*rw_row)
 
@@ -336,7 +340,7 @@ def get_referral_link_keyboard(lang: str,
     builder.button(text=_(key="referral_share_message_button"),
                    callback_data="referral_action:my_link")
     builder.button(text=_(key="menu_own_button"),
-                   callback_data="main_action:back_to_main")
+                   callback_data="main_action:own")
     builder.adjust(1)
     return builder.as_markup()
 
