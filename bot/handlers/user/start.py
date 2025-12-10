@@ -44,7 +44,7 @@ async def send_main_menu(target_event: Union[types.Message,
 
     user_id = target_event.from_user.id
     try:
-        username = hd.quote(target_event.from_user.username)
+        username = hd.quote(target_event.from_user.first_name)
     except:
         username = '-'
 
@@ -499,7 +499,7 @@ async def send_terms_text(event: Union[types.Message, types.CallbackQuery], i18n
     text = get_text(key="menu_terms_text")
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text=get_text(key="back_to_main_menu_button"),
-                   callback_data="main_action:back_to_main")]
+                   callback_data="main_action:own")]
     ])
 
     target_message_obj = event.message if isinstance(event, types.CallbackQuery) else event

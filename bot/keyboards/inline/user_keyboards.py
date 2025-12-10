@@ -141,7 +141,7 @@ def get_help_keyboard(
     builder.button(text=_(key="menu_help_2_button"), callback_data="help:2")
     builder.button(text=_(key="menu_help_3_button"), url=settings.SUPPORT_LINK)
     builder.button(text=_(key="back_to_main_menu_button"),
-                   callback_data="main_action:back_to_main")
+                   callback_data="main_action:own")
     builder.adjust(1)
     return builder.as_markup()
 
@@ -155,7 +155,7 @@ def get_language_selection_keyboard(i18n_instance,
     builder.button(text=f"🇷🇺 Русский {'✅' if current_lang == 'ru' else ''}",
                    callback_data="set_lang_ru")
     builder.button(text=_(key="back_to_main_menu_button"),
-                   callback_data="main_action:back_to_main")
+                   callback_data="main_action:own")
     builder.adjust(1)
     return builder.as_markup()
 
@@ -362,7 +362,7 @@ def get_back_to_main_menu_markup(lang: str,
                        callback_data=callback_data)
     else:
         builder.button(text=_(key="back_to_main_menu_button"),
-                       callback_data="main_action:back_to_main")
+                       callback_data="main_action:own")
     return builder.as_markup()
 
 

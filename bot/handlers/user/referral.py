@@ -200,11 +200,20 @@ async def referral_action_handler(callback: types.CallbackQuery, settings: Setti
                 [InlineKeyboardButton(text=_("referral_friend_message_button"), url=referral_link)]
             ])
 
-            await callback.message.answer(
-                friend_message,
-                reply_markup=kb,
-                disable_web_page_preview=True
-            )
+            if settings.PHOTO_ID_START:
+                await callback.message.answer_photo(
+                    photo=settings.PHOTO_ID_START,
+                    caption=friend_message,
+                    reply_markup=kb
+                )
+            else:
+                await callback.message.answer(
+                    friend_message,
+                    reply_markup=kb,
+                    disable_web_page_preview=True
+                )
+
+            await callback.message.answer("<i>☝️☝️☝️ Поделись этим сообщением с другом.</i>")
             
         except Exception as e:
             logging.error(f"Error in referral share message: {e}")
