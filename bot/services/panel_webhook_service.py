@@ -298,7 +298,7 @@ class PanelWebhookService:
             if yookassa_autorenew_attempted and yookassa_autorenew_failed:
                 await self.bot.send_photo(
                     chat_id=sub.user_id,
-                    photo=self.settings.PHOTO_ID_VPN_DISABLED,
+                    photo=self.settings.PHOTO_ID_PAY_EXPIRED,
                     caption=_("error_auto_renew_pay"),
                     reply_markup=get_subscribe_only_markup(self.settings.DEFAULT_LANGUAGE, self.i18n)
                 )
