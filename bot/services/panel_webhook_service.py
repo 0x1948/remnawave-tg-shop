@@ -266,11 +266,6 @@ class PanelWebhookService:
                             auto_renewed = await self._handle_expired_subscription(
                                 session, user_id, user_payload, lang, markup, first_name
                             )
-                            if auto_renewed:
-                                await session.commit()
-                                return  # ✓ продлено → ничего не отправляем
-                            else:
-                                await session.rollback()
                         except Exception:
                             await session.rollback()
                             logging.exception("Tribute auto-renew attempt failed")
@@ -313,6 +308,12 @@ class PanelWebhookService:
                     user_name=first_name,
                     end_date=user_payload.get("expireAt", "")[:10],
                 )
+
+            if auto_renewed:
+                await session.commit()
+                return
+            else:
+                await session.rollback()
         elif event_name == "user.expired_24_hours_ago" and self.settings.SUBSCRIPTION_NOTIFY_AFTER_EXPIRE:
             await self._send_message(
                 user_id,
