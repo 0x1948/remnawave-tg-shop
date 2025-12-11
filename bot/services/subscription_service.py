@@ -823,47 +823,62 @@ class SubscriptionService:
         return results
 
     async def charge_subscription_renewal(
-        self,
-        session: AsyncSession,
-        sub: Subscription,
+            self,
+            session: AsyncSession,
+            sub: Subscription,
     ) -> bool:
-        _ = lambda k, **kw: self.i18n.gettext(self.settings.DEFAULT_LANGUAGE, k, **kw) if self.i18n else k
-        """Attempt to charge user using saved payment method. Return True on initiated/handled, False on failure."""
-        if not sub.auto_renew_enabled:
-            return True
-        # If autopayments are disabled globally, skip charging attempts
-        if not getattr(self.settings, 'YOOKASSA_AUTOPAYMENTS_ENABLED', False):
-            return True
-        if sub.provider == "tribute":
-            # Tribute is paid externally; we do not auto-charge here
-            return True
+        """
+        Пытается инициировать автопродление подписки через YooKassa.
+        Возвращает:
+            True  — автосписание успешно инициировано
+            False — не удалось инициировать автосписание
+        """
 
+        # Автопродление выключено на уровне подписки
+        if not sub.auto_renew_enabled:
+            return False
+
+        # Глобально отключены автоплатежи
+        if not getattr(self.settings, 'YOOKASSA_AUTOPAYMENTS_ENABLED', False):
+            return False
+
+        # Tribute здесь не обрабатывается
+        if sub.provider == "tribute":
+            return False
+
+        # Получаем сохранённый метод оплаты
         from db.dal.user_billing_dal import get_user_default_payment_method
         default_pm = await get_user_default_payment_method(session, sub.user_id)
         if not default_pm:
             logging.info(f"Auto-renew skipped: no saved payment method for user {sub.user_id}")
             return False
 
+        # Получаем сервис YooKassa
         try:
-            from .yookassa_service import YooKassaService  # local import to avoid cycles
+            from .yookassa_service import YooKassaService
             yk: YooKassaService = self.yookassa_service  # type: ignore[attr-defined]
         except Exception:
             yk = None  # type: ignore
+
         if not yk or not getattr(yk, 'configured', False):
             logging.warning("YooKassa unavailable for auto-renew")
             return False
 
+        # Цена автопродления
         months = sub.duration_months or 1
         amount = self.settings.subscription_options.get(months)
         if not amount:
             logging.error(f"Auto-renew price missing for {months} months")
             return False
 
+        # Метаданные для привязки платежа к подписке
         metadata = {
             "user_id": str(sub.user_id),
             "auto_renew_for_subscription_id": str(sub.subscription_id),
             "subscription_months": str(months),
         }
+
+        # Отправляем запрос на автосписание
         resp = await yk.create_payment(
             amount=float(amount),
             currency="RUB",
@@ -874,15 +889,12 @@ class SubscriptionService:
             capture=True,
             need_confirm=False
         )
+
+        # Проверяем статус
         if not resp or resp.get("status") not in {"pending", "waiting_for_capture", "succeeded"}:
-            await self.bot.send_photo(
-                chat_id=sub.user_id,
-                photo=self.settings.PHOTO_ID_VPN_DISABLED,
-                caption=_("error_auto_renew_pay"),
-                reply_markup=get_subscribe_only_markup(self.settings.DEFAULT_LANGUAGE, self.i18n)
-            )
             logging.error(f"Auto-renew create_payment failed: {resp}")
             return False
+
         logging.info(f"Auto-renew initiated for user {sub.user_id} payment_id={resp.get('id')}")
         return True
 
