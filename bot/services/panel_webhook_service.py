@@ -206,8 +206,6 @@ class PanelWebhookService:
                         end_date=user_payload.get("expireAt", "")[:10],
                     )
                     return
-
-                # For 48h event, if auto-renew is enabled and not tribute, show special notice with cancel button
                 if days_left == 2:
                     async with self.async_session_factory() as session:
                         from db.dal import subscription_dal
@@ -240,30 +238,36 @@ class PanelWebhookService:
         elif event_name == "user.expired":
             try:
                 subscription_service = getattr(self, "subscription_service", None)
-                if subscription_service:
-                    async with self.async_session_factory() as session:
-                        from db.dal import subscription_dal
-                        sub = await subscription_dal.get_active_subscription_by_user_id(session, user_id)
-                        logging.info(sub)
-                        if sub and sub.auto_renew_enabled and sub.provider != 'tribute':
-                            try:
-                                ok = await subscription_service.charge_subscription_renewal(session, sub)
-                                # If initiation succeeded, suppress the 24h reminder by returning early
-                                if ok:
-                                    await session.commit()
-                                    return
-                                else:
-                                    await session.rollback()
-                            except Exception:
-                                await session.rollback()
-                                logging.exception("Auto-renew attempt (24h) failed")
-            except Exception:
-                logging.exception("Auto-renew trigger (24h) failed pre-check")
+                if not subscription_service:
+                    raise RuntimeError("subscription_service missing")
 
-            # Check if this is a tribute user that should be auto-renewed (regardless of notification settings)
-            auto_renewed = await self._handle_expired_subscription(session, user_id, user_payload, lang, markup, first_name)
-            
-            # If auto-renewed via Tribute, suppress expiration notification. Otherwise, send it if enabled.
+                async with self.async_session_factory() as session:
+                    from db.dal import subscription_dal
+                    sub = await subscription_dal.get_active_subscription_by_user_id(session, user_id)
+                    auto_renewed = False
+                    if sub and sub.provider == "tribute" and sub.auto_renew_enabled:
+                        try:
+                            auto_renewed = await self._handle_expired_subscription(
+                                session, user_id, user_payload, lang, markup, first_name
+                            )
+                            if auto_renewed:
+                                await session.commit()
+                        except Exception:
+                            await session.rollback()
+                            logging.exception("Tribute auto-renew attempt failed")
+                    if not auto_renewed and sub and sub.auto_renew_enabled:
+                        try:
+                            auto_renewed = await subscription_service.charge_subscription_renewal(session, sub)
+                            if auto_renewed:
+                                await session.commit()
+                            else:
+                                await session.rollback()
+                        except Exception:
+                            await session.rollback()
+                            logging.exception("YooKassa auto-renew attempt failed")
+
+            except Exception:
+                logging.exception("Auto-renew main block failed")
             if not auto_renewed and self.settings.SUBSCRIPTION_NOTIFY_ON_EXPIRE:
                 await self._send_message(
                     user_id,
@@ -274,14 +278,14 @@ class PanelWebhookService:
                     end_date=user_payload.get("expireAt", "")[:10],
                 )
         elif event_name == "user.expired_24_hours_ago" and self.settings.SUBSCRIPTION_NOTIFY_AFTER_EXPIRE:
-            await self._send_message(
-                user_id,
-                lang,
-                "subscription_expired_yesterday_notification",
-                reply_markup=markup,
-                user_name=first_name,
-                end_date=user_payload.get("expireAt", "")[:10],
-            )
+                await self._send_message(
+                    user_id,
+                    lang,
+                    "subscription_expired_yesterday_notification",
+                    reply_markup=markup,
+                    user_name=first_name,
+                    end_date=user_payload.get("expireAt", "")[:10],
+                )
 
     async def handle_webhook(self, raw_body: bytes, signature_header: Optional[str]) -> web.Response:
         if self.settings.PANEL_WEBHOOK_SECRET:
