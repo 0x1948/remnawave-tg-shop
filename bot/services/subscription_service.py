@@ -7,6 +7,7 @@ from bot.middlewares.i18n import JsonI18n
 
 from db.dal import user_dal, subscription_dal, promo_code_dal, payment_dal, user_billing_dal
 from bot.utils.date_utils import add_months, add_time
+from bot.keyboards.inline.user_keyboards import get_subscribe_only_markup
 from db.models import User, Subscription
 
 from config.settings import Settings
@@ -876,7 +877,8 @@ class SubscriptionService:
             await self.bot.send_photo(
                 chat_id=sub.user_id,
                 photo=self.settings.PHOTO_ID_VPN_DISABLED,
-                caption=self.i18n("error_auto_renew_pay")
+                caption=self.i18n("error_auto_renew_pay"),
+                reply_markup=get_subscribe_only_markup(self.settings.DEFAULT_LANGUAGE, self.i18n)
             )
             logging.error(f"Auto-renew create_payment failed: {resp}")
             return False
