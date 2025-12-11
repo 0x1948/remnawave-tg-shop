@@ -827,6 +827,7 @@ class SubscriptionService:
         session: AsyncSession,
         sub: Subscription,
     ) -> bool:
+        _ = lambda k, **kw: self.i18n.gettext(self.settings.DEFAULT_LANGUAGE, k, **kw) if self.i18n else k
         """Attempt to charge user using saved payment method. Return True on initiated/handled, False on failure."""
         if not sub.auto_renew_enabled:
             return True
@@ -877,7 +878,7 @@ class SubscriptionService:
             await self.bot.send_photo(
                 chat_id=sub.user_id,
                 photo=self.settings.PHOTO_ID_VPN_DISABLED,
-                caption=self.i18n("error_auto_renew_pay"),
+                caption=_("error_auto_renew_pay"),
                 reply_markup=get_subscribe_only_markup(self.settings.DEFAULT_LANGUAGE, self.i18n)
             )
             logging.error(f"Auto-renew create_payment failed: {resp}")
