@@ -189,6 +189,7 @@ class PanelWebhookService:
             db_user = await user_dal.get_user_by_id(session, user_id)
             lang = db_user.language_code if db_user and db_user.language_code else self.settings.DEFAULT_LANGUAGE
             first_name = db_user.first_name or f"User {user_id}" if db_user else f"User {user_id}"
+            _ = lambda k, **kw: self.i18n.gettext(lang, k, **kw) if self.i18n else k
 
         markup = get_subscribe_only_markup(lang, self.i18n)
 
@@ -292,7 +293,7 @@ class PanelWebhookService:
 
             if yookassa_autorenew_attempted and yookassa_autorenew_failed:
                 await self.bot.send_photo(
-                    chat_id=sub.user_id,
+                    chat_id=user_id,
                     photo=self.settings.PHOTO_ID_PAY_EXPIRED,
                     caption=_("error_auto_renew_pay"),
                     reply_markup=get_subscribe_only_markup(self.settings.DEFAULT_LANGUAGE, self.i18n)
