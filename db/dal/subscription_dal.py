@@ -15,8 +15,7 @@ async def get_active_subscription_by_user_id(
         panel_user_uuid: Optional[str] = None) -> Optional[Subscription]:
     stmt = select(Subscription).where(
         Subscription.user_id == user_id,
-        Subscription.is_active == True,
-        Subscription.end_date > datetime.now(timezone.utc),
+        Subscription.is_active == True
     )
     logging.info(stmt)
     if panel_user_uuid:
