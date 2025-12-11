@@ -873,6 +873,11 @@ class SubscriptionService:
             need_confirm=False
         )
         if not resp or resp.get("status") not in {"pending", "waiting_for_capture", "succeeded"}:
+            await self.bot.send_photo(
+                chat_id=sub.user_id,
+                photo=self.settings.PHOTO_ID_VPN_DISABLED,
+                caption=self.i18n("error_auto_renew_pay")
+            )
             logging.error(f"Auto-renew create_payment failed: {resp}")
             return False
         logging.info(f"Auto-renew initiated for user {sub.user_id} payment_id={resp.get('id')}")
