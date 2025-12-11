@@ -17,7 +17,6 @@ async def get_active_subscription_by_user_id(
         Subscription.user_id == user_id,
         Subscription.is_active == True
     )
-    logging.info(stmt)
     if panel_user_uuid:
         stmt = stmt.where(Subscription.panel_user_uuid == panel_user_uuid)
     stmt = stmt.order_by(Subscription.end_date.desc()).limit(1)
