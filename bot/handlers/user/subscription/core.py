@@ -438,6 +438,9 @@ async def disconnect_device_handler(
         await callback.answer(get_text("subscription_not_active", ider=callback.message.from_user.id), show_alert=True)
         return
 
+    ## tut bil baruh
+
+
     success = await panel_service.disconnect_device(active.get("user_id"), hwid)
     if not success:
         await callback.answer(get_text("error_try_again"), show_alert=True)
