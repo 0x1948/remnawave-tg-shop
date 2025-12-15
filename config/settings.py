@@ -40,6 +40,7 @@ class Settings(BaseSettings):
     PHOTO_ID_EXPIRED_24_HOURS: str = Field(default=None)
     PHOTO_ID_CONNECT_VPN: str = Field(default=None)
     PHOTO_ID_UR_INFORM: str = Field(default=None)
+    PHOTO_ID_VPN_NOT_FOUND: str = Field(default=None)
 
 
 

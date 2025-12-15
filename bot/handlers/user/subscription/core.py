@@ -109,7 +109,7 @@ async def my_subscription_command_handler(
         text = get_text("subscription_not_active", ider=event.message.from_user.id)
 
         buy_button = InlineKeyboardButton(
-            text=get_text("menu_subscribe_inline", default="Купить"), callback_data="main_action:subscribe"
+            text=get_text("menu_buy_vpn_inline", default="Купить"), callback_data="main_action:subscribe"
         )
         back_markup = get_back_to_main_menu_markup(current_lang, i18n)
 
@@ -121,8 +121,8 @@ async def my_subscription_command_handler(
             except Exception:
                 pass
             try:
-                if settings.PHOTO_ID_YOUR_PROF:
-                    await event.message.edit_media(media=InputMediaPhoto(media=settings.PHOTO_ID_YOUR_PROF, caption=text), reply_markup=kb, disable_web_page_preview=True)
+                if settings.PHOTO_ID_VPN_NOT_FOUND:
+                    await event.message.edit_media(media=InputMediaPhoto(media=settings.PHOTO_ID_VPN_NOT_FOUND, caption=text), reply_markup=kb, disable_web_page_preview=True)
                 else:
                     await event.message.edit_text(text, reply_markup=kb)
             except Exception:
