@@ -40,6 +40,9 @@ class User(Base):
     payments = relationship("Payment",
                             back_populates="user",
                             cascade="all, delete-orphan")
+    payouts = relationship("Payout",
+                            back_populates="user",
+                            cascade="all, delete-orphan")
     promo_code_activations = relationship("PromoCodeActivation",
                                           back_populates="user",
                                           cascade="all, delete-orphan")
@@ -139,7 +142,7 @@ class Payout(Base):
                         onupdate=func.now(),
                         nullable=True)
 
-    user = relationship("User", back_populates="payments")
+    user = relationship("User", back_populates="payouts")
 
 class UserBilling(Base):
     __tablename__ = "user_billing"
