@@ -74,6 +74,54 @@ def _migration_0004_add_user_referral_reward_applied(connection: Connection) -> 
             text("ALTER TABLE payments ADD COLUMN referral_reward_applied BOOLEAN DEFAULT FALSE")
         )
 
+def _migration_0005_add_subscription_resend_disable_fields(connection: Connection) -> None:
+    inspector = inspect(connection)
+    columns = {col["name"] for col in inspector.get_columns("subscriptions")}
+    statements: List[str] = []
+
+    if "resend_disable_message_date" not in columns:
+        statements.append(
+            "ALTER TABLE subscriptions "
+            "ADD COLUMN resend_disable_message_date TIMESTAMPTZ"
+        )
+
+    if "resend_disable_message_step" not in columns:
+        statements.append(
+            "ALTER TABLE subscriptions "
+            "ADD COLUMN resend_disable_message_step INTEGER DEFAULT 0"
+        )
+
+    for stmt in statements:
+        connection.execute(text(stmt))
+
+def _migration_0006_create_payouts_table(connection: Connection) -> None:
+    inspector = inspect(connection)
+    tables = set(inspector.get_table_names())
+
+    if "payouts" in tables:
+        return
+
+    connection.execute(text("""
+        CREATE TABLE payouts (
+            payout_id SERIAL PRIMARY KEY,
+            user_id BIGINT NOT NULL
+                REFERENCES users(user_id)
+                ON DELETE CASCADE,
+            price INTEGER NOT NULL,
+            requisites VARCHAR NOT NULL,
+            status VARCHAR NOT NULL,
+            created_at TIMESTAMPTZ DEFAULT NOW(),
+            updated_at TIMESTAMPTZ
+        )
+    """))
+
+    connection.execute(text(
+        "CREATE INDEX idx_payouts_user_id ON payouts(user_id)"
+    ))
+    connection.execute(text(
+        "CREATE INDEX idx_payouts_status ON payouts(status)"
+    ))
+
 MIGRATIONS: List[Migration] = [
     Migration(
         id="0001_add_channel_subscription_fields",
@@ -94,6 +142,16 @@ MIGRATIONS: List[Migration] = [
         id="0004_add_user_referral_reward_applied",
         description="Add referral_reward_applied column to users table",
         upgrade=_migration_0004_add_user_referral_reward_applied,
+    ),
+    Migration(
+        id="0005_add_subscription_resend_disable_fields",
+        description="Add resend disable notification fields to subscriptions table",
+        upgrade=_migration_0005_add_subscription_resend_disable_fields,
+    ),
+    Migration(
+        id="0006_create_payouts_table",
+        description="Create payouts table",
+        upgrade=_migration_0006_create_payouts_table,
     )
 ]
 
