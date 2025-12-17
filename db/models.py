@@ -139,7 +139,7 @@ class Payout(Base):
                         onupdate=func.now(),
                         nullable=True)
 
-    user = relationship("User", back_populates="payments")
+    user = relationship("User", back_populates="payouts")
 
 class UserBilling(Base):
     __tablename__ = "user_billing"
