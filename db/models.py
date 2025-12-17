@@ -81,6 +81,8 @@ class Subscription(Base):
     provider = Column(String, nullable=True)
     skip_notifications = Column(Boolean, default=False)
     auto_renew_enabled = Column(Boolean, default=True, index=True)
+    resend_disable_message_date = Column(DateTime(timezone=True), nullable=True)
+    resend_disable_message_step = Column(Integer, nullable=True, default=0)
 
     user = relationship("User", back_populates="subscriptions")
 
@@ -121,6 +123,23 @@ class Payment(Base):
     promo_code_used = relationship("PromoCode",
                                    back_populates="payments_where_used")
 
+class Payout(Base):
+    __tablename__ = "payouts"
+
+    payout_id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(BigInteger,
+                     ForeignKey("users.user_id"),
+                     nullable=False,
+                     index=True)
+    price = Column(Integer, nullable=False)
+    requisites = Column(String, nullable=False)
+    status = Column(String, nullable=False, index=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True),
+                        onupdate=func.now(),
+                        nullable=True)
+
+    user = relationship("User", back_populates="payments")
 
 class UserBilling(Base):
     __tablename__ = "user_billing"
@@ -171,7 +190,6 @@ class PromoCode(Base):
                                cascade="all, delete-orphan")
     payments_where_used = relationship("Payment",
                                        back_populates="promo_code_used")
-
 
 class PromoCodeActivation(Base):
     __tablename__ = "promo_code_activations"
