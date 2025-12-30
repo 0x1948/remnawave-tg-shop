@@ -9,6 +9,7 @@ from . import ad_dal
 
 __all__ = (
     "user_dal",
+    "payout_dal",
     "payment_dal",
     "subscription_dal",
     "promo_code_dal",

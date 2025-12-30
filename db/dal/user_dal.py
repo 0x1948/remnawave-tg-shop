@@ -11,6 +11,7 @@ from ..models import (
     User,
     Subscription,
     Payment,
+    Payout,
     PromoCodeActivation,
     MessageLog,
     UserBilling,
