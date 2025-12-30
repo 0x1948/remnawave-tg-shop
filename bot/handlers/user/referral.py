@@ -269,6 +269,7 @@ async def referral_action_handler(callback: types.CallbackQuery, state: FSMConte
     current_lang = i18n_data.get("current_language", settings.DEFAULT_LANGUAGE)
     i18n = i18n_data.get("i18n_instance")
     _ = lambda key, **kwargs: i18n.gettext(current_lang, key, **kwargs)
+    await state.clear()
 
     if action == "my_link":
         try:
