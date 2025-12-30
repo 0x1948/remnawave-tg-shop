@@ -40,6 +40,9 @@ from bot.handlers.user import payment as user_payment_webhook_module
 from bot.handlers.admin.sync_admin import perform_sync
 from bot.utils.message_queue import init_queue_manager
 
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.interval import IntervalTrigger
+
 
 async def register_all_routers(dp: Dispatcher, settings: Settings):
     dp.include_router(build_root_router(settings))
@@ -227,6 +230,19 @@ async def on_shutdown_configured(dispatcher: Dispatcher):
 
     logging.info("SHUTDOWN: Bot on_shutdown_configured completed.")
 
+async def setup_scheduler(scheduler: AsyncIOScheduler):
+    from .scheduler.jobs import check_expired_subscriptions_job
+
+    scheduler.add_job(
+        check_expired_subscriptions_job,
+        trigger=IntervalTrigger(minutes=1),
+        id="check_expired_subscriptions",
+        replace_existing=True,
+        max_instances=1,
+        coalesce=True,
+    )
+
+    scheduler.start()
 
 async def run_bot(settings_param: Settings):
     local_async_session_factory = init_db_connection(settings_param)
@@ -235,6 +251,7 @@ async def run_bot(settings_param: Settings):
             "Failed to initialize database connection and session factory. Exiting."
         )
         return
+    scheduler = AsyncIOScheduler(timezone="UTC")
     dp, bot, extra = build_dispatcher(settings_param, local_async_session_factory)
     i18n_instance = extra["i18n_instance"]
 
@@ -278,6 +295,8 @@ async def run_bot(settings_param: Settings):
         logging.error("WEBHOOK_BASE_URL is required. Polling mode is disabled. Exiting.")
         await dp.emit_shutdown()
         raise SystemExit("WEBHOOK_BASE_URL is required. Polling mode is disabled.")
+
+    # await setup_scheduler(scheduler)
 
     logging.info(f"--- Bot Run Mode Decision ---")
     logging.info(f"Configured WEBHOOK_BASE_URL: '{tg_webhook_base}' -> Webhook Mode: ENABLED")

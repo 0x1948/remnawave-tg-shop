@@ -259,6 +259,7 @@ class PanelWebhookService:
                                 reply_markup=markup,
                                 user_name=first_name,
                                 end_date=user_payload.get("expireAt", "")[:10],
+                                photo_id=self.settings.PHOTO_ID_PAY_EXPIRED
                             )
                         return
 
@@ -308,6 +309,7 @@ class PanelWebhookService:
                     reply_markup=markup,
                     user_name=first_name,
                     end_date=user_payload.get("expireAt", "")[:10],
+                    photo_id=self.settings.PHOTO_ID_PAY_EXPIRED
                 )
 
             if auto_renewed:

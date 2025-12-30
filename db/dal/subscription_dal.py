@@ -23,6 +23,23 @@ async def get_active_subscription_by_user_id(
     result = await session.execute(stmt)
     return result.scalars().first()
 
+async def get_subscriptions_for_resend(session: AsyncSession):
+    three_days_ago = func.now() - timedelta(days=3)
+
+    stmt = (
+        select(Subscription)
+        .where(
+            Subscription.is_active.is_(False),
+            Subscription.resend_disable_message_step < 3,
+            or_(
+                Subscription.resend_disable_message_date.is_(None),
+                Subscription.resend_disable_message_date <= three_days_ago,
+            ),
+        )
+    )
+
+    result = await session.execute(stmt)
+    return result.scalars().all()
 
 async def get_subscription_by_panel_subscription_uuid(
         session: AsyncSession, panel_sub_uuid: str) -> Optional[Subscription]:
