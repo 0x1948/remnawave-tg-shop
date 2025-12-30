@@ -1009,6 +1009,7 @@ async def main_action_callback_handler(
     from . import referral as user_referral_handlers
     from . import promo_user as user_promo_handlers
     from . import trial_handler as user_trial_handlers
+    from . import payouts as user_payouts_handlers
 
     if not callback.message:
         await callback.answer("Error: message context lost.", show_alert=True)
@@ -1043,6 +1044,9 @@ async def main_action_callback_handler(
     elif action == "apply_promo":
         await user_promo_handlers.prompt_promo_code_input(
             callback, state, i18n_data, settings, session)
+    # elif action == "gift_vpn":
+    #     await user_payouts_handlers.prompt_get_requisites_handler(
+    #         callback, state, i18n_data, settings, session)
     elif action == "request_trial":
         await send_trial_text(callback, i18n_data, settings, session)
     elif action == "language":
