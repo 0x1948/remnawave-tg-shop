@@ -19,15 +19,15 @@ from ..models import (
     AdAttribution,
 )
 
-async def get_payout_by_id(session: AsyncSession, payout_id: int) -> Optional[User]:
+async def get_payout_by_id(session: AsyncSession, payout_id: int) -> Optional[Payout]:
     stmt = select(Payout).where(Payout.payout_id == payout_id)
     result = await session.execute(stmt)
     return result.scalar_one_or_none()
 
-async def create_payout(session: AsyncSession, payout_data: Dict[str, Any]) -> Tuple[User, bool]:
+async def create_payout(session: AsyncSession, payout_data: Dict[str, Any]) -> Tuple[Payout, bool]:
     """Create a payout in a race-safe way.
 
-    Returns a tuple of (user, created_flag).
+    Returns a tuple of (Payout, created_flag).
     """
 
     if "created_at" not in payout_data:
@@ -41,10 +41,13 @@ async def create_payout(session: AsyncSession, payout_data: Dict[str, Any]) -> T
     )
 
     result = await session.execute(stmt)
-    inserted_row = result.first()
-    created = inserted_row is not None
+    payout_id = result.scalar_one_or_none()
 
-    payout_id: int = inserted_row["payout_id"]
+    created = payout_id is not None
+
+    if payout_id is None:
+        return None, False
+
     payout = await get_payout_by_id(session, payout_id)
 
     if created and payout is not None:
