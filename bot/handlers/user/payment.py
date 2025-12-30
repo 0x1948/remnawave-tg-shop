@@ -100,6 +100,7 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
         amount_data = payment_info_from_webhook.get("amount", {})
         payment_value = float(amount_data.get("value", 0.0))
         its_test_period = False
+        pay_succesful = False
 
         logging.info(f"PENIS: {payment_value}")
         if payment_value == 1.0 and subscription_months == 0.5:
@@ -317,11 +318,12 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
                         sub_url=config_link
                     )
                 else:
+                    pay_succesful = True
                     details_message = _(
                         "payment_successful_full",
-                        months=subscription_months,
-                        end_date=final_end_date_for_user.strftime('%Y-%m-%d'),
-                        config_link=config_link,
+                        date=end_date,
+                        period=total_days,
+                        sub_url=config_link
                     )
             else:
                 logging.error(
@@ -337,6 +339,14 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
                 await bot.send_photo(
                     user_id,
                     photo=settings.PHOTO_ID_TEST_ACTIVATED,
+                    caption=details_message,
+                    reply_markup=details_markup,
+                    parse_mode="HTML"
+                )
+            elif pay_succesful:
+                await bot.send_photo(
+                    user_id,
+                    photo=settings.PHOTO_ID_YOUR_PROF,
                     caption=details_message,
                     reply_markup=details_markup,
                     parse_mode="HTML"

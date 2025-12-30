@@ -193,6 +193,13 @@ async def my_subscription_command_handler(
                     )
                 ])
 
+        prepend_rows.append([
+            InlineKeyboardButton(
+                text=get_text(key="inline_new_time_vpn"),
+                callback_data="main_action:subscribe"
+            )
+        ])
+
         if settings.MY_DEVICES_SECTION_ENABLED:
             max_devices_value = active.get("max_devices")
             max_devices_display = get_text("devices_unlimited_label")
