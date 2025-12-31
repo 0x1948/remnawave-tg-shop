@@ -6,4 +6,3 @@ class UserPromoStates(StatesGroup):
 
 class UserGetRequisites(StatesGroup):
     waiting_for_requisites = State()
-    apply_payout = State()
