@@ -421,7 +421,7 @@ async def success_payout_handler(callback: types.CallbackQuery, state: FSMContex
         return
     _ = lambda key, **kwargs: i18n.gettext(current_lang, key, **kwargs)
 
-    payout = await payout_dal.get_user_by_id(session, payout_id)
+    payout = await payout_dal.get_payout_by_id(session, payout_id)
     if not payout:
         await callback.answer(_(
             "payout_not_found_action",
@@ -457,7 +457,7 @@ async def rejected_payout_handler(callback: types.CallbackQuery, state: FSMConte
         return
     _ = lambda key, **kwargs: i18n.gettext(current_lang, key, **kwargs)
 
-    payout = await payout_dal.get_user_by_id(session, payout_id)
+    payout = await payout_dal.get_payout_by_id(session, payout_id)
     if not payout:
         await callback.answer(_(
             "payout_not_found_action",

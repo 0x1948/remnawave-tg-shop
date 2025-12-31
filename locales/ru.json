@@ -79,7 +79,7 @@
   "config_link_not_available": "недоступна, обратитесь в поддержку",
   "traffic_unlimited": "Безлимитный",
   "promo_code_prompt": "Пожалуйста, введите ваш промокод:",
-  "requisites_prompt": "<b>\uD83D\uDCB0 Сумма вывода:</b> <code>{balance}</code>\n\n<b>Отправьте реквизиты для выплаты (максимум 100 символов):</b>",
+  "requisites_prompt": "<b>\uD83D\uDCB0 Сумма вывода:</b> <code>{balance}</code>\n\n<b>\uD83D\uDCB3 Отправьте реквизиты для выплаты (максимум 100 символов):</b>",
   "requisites_prompt_fail": "<b>\uD83E\uDDD0 Вы ввели что-то не то. Попробуйте еще раз:</b>",
   "requisites_payout_good": "<b>✅ Успех! Вы создали заявку <code>#{payout_id}</code> на сумму {price}₽.</b>\n\nЕсли Вы сделали это <b>по ошибке, то обратитесь в тех.поддержку</b>.\n<b>Если нет, то ожидайте обновления статуса заявки</b>.",
   "requisites_payout_created_admin": "\uD83D\uDCAC <b>Запрос на вывод</b>\n\n\uD83D\uDC64 Пользователь: {user_display}\n\uD83D\uDCB0 Сумма: <b>{amount}₽</b>\n\uD83D\uDD50 Время: {timestamp}\n\uD83D\uDCC9 Реквизиты:\n<code>{requisites}</code>",
