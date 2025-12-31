@@ -1009,7 +1009,6 @@ async def main_action_callback_handler(
     from . import referral as user_referral_handlers
     from . import promo_user as user_promo_handlers
     from . import trial_handler as user_trial_handlers
-    from . import payouts as user_payouts_handlers
 
     if not callback.message:
         await callback.answer("Error: message context lost.", show_alert=True)
