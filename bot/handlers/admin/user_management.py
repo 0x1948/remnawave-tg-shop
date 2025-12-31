@@ -409,7 +409,7 @@ async def success_payout_handler(callback: types.CallbackQuery, state: FSMContex
                              panel_service: PanelApiService,
                              session: AsyncSession):
     try:
-        payout_id = callback.data.split(":")[1]
+        payout_id = int(callback.data.split(":")[1])
     except (IndexError, ValueError):
         await callback.answer("Invalid action format.", show_alert=True)
         return
@@ -445,7 +445,7 @@ async def rejected_payout_handler(callback: types.CallbackQuery, state: FSMConte
                              panel_service: PanelApiService,
                              session: AsyncSession):
     try:
-        payout_id = callback.data.split(":")[1]
+        payout_id = int(callback.data.split(":")[1])
     except (IndexError, ValueError):
         await callback.answer("Invalid action format.", show_alert=True)
         return
