@@ -479,7 +479,7 @@ async def rejected_payout_handler(callback: types.CallbackQuery, state: FSMConte
 
     await payout_dal.update_payout(session, payout_id, {"status": "rejected"})
 
-    db_user = await user_dal.get_user_by_id(session, payout_id.user_id)
+    db_user = await user_dal.get_user_by_id(session, payout.user_id)
 
     await user_dal.update_user(session, db_user.user_id, {"balance": db_user.balance + payout.price})
 
