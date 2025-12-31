@@ -150,9 +150,11 @@ async def prompt_get_requisites_handler(callback: types.CallbackQuery,
                               show_alert=True)
         return
 
+    db_user = await user_dal.get_user_by_id(session, callback.message.from_user.id)
+
     try:
         if settings.PHOTO_ID_GIFT_BRO:
-            await callback.message.edit_media(media=InputMediaPhoto(media=settings.PHOTO_ID_GIFT_BRO, caption=_(key="requisites_prompt")),
+            await callback.message.edit_media(media=InputMediaPhoto(media=settings.PHOTO_ID_GIFT_BRO, caption=_(key="requisites_prompt", balance=db_user.balance)),
                                               reply_markup=get_back_to_main_menu_markup(current_lang, i18n, callback_data="referral_action:my_link"), disable_web_page_preview=True)
         else:
             await callback.message.edit_text(

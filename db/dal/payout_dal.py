@@ -60,3 +60,15 @@ async def create_payout(session: AsyncSession, payout_data: Dict[str, Any]) -> T
         )
 
     return payout, created
+
+async def update_payout(
+    session: AsyncSession, payout_id: int, update_data: Dict[str, Any]
+) -> Optional[User]:
+    payout = await get_payout_by_id(session, payout_id)
+    if payout:
+        for key, value in update_data.items():
+            setattr(payout, key, value)
+        await session.flush()
+        await session.refresh(payout)
+    return payout
+

@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timezone
 
 from config.settings import Settings
-from db.dal import user_dal, subscription_dal, message_log_dal
+from db.dal import user_dal, subscription_dal, message_log_dal, payout_dal
 from db.models import User
 from bot.states.admin_states import AdminStates
 from bot.keyboards.inline.admin_keyboards import get_back_to_admin_panel_keyboard
@@ -400,6 +400,83 @@ async def process_user_search_handler(message: types.Message, state: FSMContext,
             "admin_user_card_error",
             default="❌ Ошибка отображения карточки пользователя"
         ))
+
+
+@router.callback_query(F.data.startswith("success_payout:"))
+async def success_payout_handler(callback: types.CallbackQuery, state: FSMContext,
+                             settings: Settings, i18n_data: dict, bot: Bot,
+                             subscription_service: SubscriptionService,
+                             panel_service: PanelApiService,
+                             session: AsyncSession):
+    try:
+        payout_id = callback.data.split(":")[1]
+    except (IndexError, ValueError):
+        await callback.answer("Invalid action format.", show_alert=True)
+        return
+
+    current_lang = i18n_data.get("current_language", settings.DEFAULT_LANGUAGE)
+    i18n: Optional[JsonI18n] = i18n_data.get("i18n_instance")
+    if not i18n:
+        await callback.answer("Language service error.", show_alert=True)
+        return
+    _ = lambda key, **kwargs: i18n.gettext(current_lang, key, **kwargs)
+
+    payout = await payout_dal.get_user_by_id(session, payout_id)
+    if not payout:
+        await callback.answer(_(
+            "payout_not_found_action",
+            default="Вывод не найден"
+        ), show_alert=True)
+        return
+
+    await bot.send_message(
+        payout.user_id,
+        _("requisites_payout_success", payout_id=payout_id)
+    )
+
+    await payout_dal.update_payout(session, payout_id, {"status": "approved"})
+
+    await callback.answer("Успешно.")
+
+@router.callback_query(F.data.startswith("rejected_payout:"))
+async def rejected_payout_handler(callback: types.CallbackQuery, state: FSMContext,
+                             settings: Settings, i18n_data: dict, bot: Bot,
+                             subscription_service: SubscriptionService,
+                             panel_service: PanelApiService,
+                             session: AsyncSession):
+    try:
+        payout_id = callback.data.split(":")[1]
+    except (IndexError, ValueError):
+        await callback.answer("Invalid action format.", show_alert=True)
+        return
+
+    current_lang = i18n_data.get("current_language", settings.DEFAULT_LANGUAGE)
+    i18n: Optional[JsonI18n] = i18n_data.get("i18n_instance")
+    if not i18n:
+        await callback.answer("Language service error.", show_alert=True)
+        return
+    _ = lambda key, **kwargs: i18n.gettext(current_lang, key, **kwargs)
+
+    payout = await payout_dal.get_user_by_id(session, payout_id)
+    if not payout:
+        await callback.answer(_(
+            "payout_not_found_action",
+            default="Вывод не найден"
+        ), show_alert=True)
+        return
+
+    await bot.send_message(
+        payout.user_id,
+        _("requisites_payout_rejected", payout_id=payout_id)
+    )
+
+    await payout_dal.update_payout(session, payout_id, {"status": "rejected"})
+
+    db_user = await user_dal.get_user_by_id(session, payout_id.user_id)
+
+    await user_dal.update_user(session, db_user.user_id, {"balance": db_user.balance + payout.price})
+
+    await callback.answer("Успешно.")
 
 
 @router.callback_query(F.data.startswith("user_action:"))
