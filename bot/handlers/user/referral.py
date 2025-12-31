@@ -150,7 +150,11 @@ async def prompt_get_requisites_handler(callback: types.CallbackQuery,
                               show_alert=True)
         return
 
-    db_user = await user_dal.get_user_by_id(session, callback.message.from_user.id)
+    logging.info(callback.message.chat.id)
+    db_user = await user_dal.get_user_by_id(session, callback.message.chat.id)
+
+    logging.info(db_user)
+    logging.info(db_user.balance)
 
     try:
         if settings.PHOTO_ID_GIFT_BRO:
