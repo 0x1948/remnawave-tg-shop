@@ -439,7 +439,7 @@ async def success_payout_handler(callback: types.CallbackQuery, state: FSMContex
         )
 
         await payout_dal.update_payout(session, payout_id, {"status": "approved"})
-
+#
         await callback.answer("Успешно.")
     except Exception as e:
         logging.error(f"Error success payout handling with user {callback.message.from_user.id}: {e}")
