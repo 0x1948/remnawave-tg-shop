@@ -470,6 +470,7 @@ async def rejected_payout_handler(callback: types.CallbackQuery, state: FSMConte
 
     if payout.status in ["approved", "rejected"]:
         await callback.answer("Эта заявка уже закрыта одним из админов.")
+        return
 
     await bot.send_message(
         payout.user_id,
