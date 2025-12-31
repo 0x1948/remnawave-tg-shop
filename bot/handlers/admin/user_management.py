@@ -414,32 +414,36 @@ async def success_payout_handler(callback: types.CallbackQuery, state: FSMContex
         await callback.answer("Invalid action format.", show_alert=True)
         return
 
-    current_lang = i18n_data.get("current_language", settings.DEFAULT_LANGUAGE)
-    i18n: Optional[JsonI18n] = i18n_data.get("i18n_instance")
-    if not i18n:
-        await callback.answer("Language service error.", show_alert=True)
-        return
-    _ = lambda key, **kwargs: i18n.gettext(current_lang, key, **kwargs)
+    try:
+        current_lang = i18n_data.get("current_language", settings.DEFAULT_LANGUAGE)
+        i18n: Optional[JsonI18n] = i18n_data.get("i18n_instance")
+        if not i18n:
+            await callback.answer("Language service error.", show_alert=True)
+            return
+        _ = lambda key, **kwargs: i18n.gettext(current_lang, key, **kwargs)
 
-    payout = await payout_dal.get_payout_by_id(session, payout_id)
-    if not payout:
-        await callback.answer(_(
-            "payout_not_found_action",
-            default="Вывод не найден"
-        ), show_alert=True)
-        return
+        payout = await payout_dal.get_payout_by_id(session, payout_id)
+        if not payout:
+            await callback.answer(_(
+                "payout_not_found_action",
+                default="Вывод не найден"
+            ), show_alert=True)
+            return
 
-    if payout.status in ["approved", "rejected"]:
-        await callback.answer("Эта заявка уже закрыта одним из админов.")
+        if payout.status in ["approved", "rejected"]:
+            await callback.answer("Эта заявка уже закрыта одним из админов.")
 
-    await bot.send_message(
-        payout.user_id,
-        _("requisites_payout_success", payout_id=payout_id)
-    )
+        await bot.send_message(
+            payout.user_id,
+            _("requisites_payout_success", payout_id=payout_id)
+        )
 
-    await payout_dal.update_payout(session, payout_id, {"status": "approved"})
+        await payout_dal.update_payout(session, payout_id, {"status": "approved"})
 
-    await callback.answer("Успешно.")
+        await callback.answer("Успешно.")
+    except Exception as e:
+        logging.error(f"Error success payout handling with user {callback.message.from_user.id}: {e}")
+        await callback.answer("Ошибка! Обратитесь к разработчикам.", show_alert=True)
 
 @router.callback_query(F.data.startswith("rejected_payout:"))
 async def rejected_payout_handler(callback: types.CallbackQuery, state: FSMContext,
@@ -460,30 +464,34 @@ async def rejected_payout_handler(callback: types.CallbackQuery, state: FSMConte
         return
     _ = lambda key, **kwargs: i18n.gettext(current_lang, key, **kwargs)
 
-    payout = await payout_dal.get_payout_by_id(session, payout_id)
-    if not payout:
-        await callback.answer(_(
-            "payout_not_found_action",
-            default="Вывод не найден"
-        ), show_alert=True)
-        return
+    try:
+        payout = await payout_dal.get_payout_by_id(session, payout_id)
+        if not payout:
+            await callback.answer(_(
+                "payout_not_found_action",
+                default="Вывод не найден"
+            ), show_alert=True)
+            return
 
-    if payout.status in ["approved", "rejected"]:
-        await callback.answer("Эта заявка уже закрыта одним из админов.")
-        return
+        if payout.status in ["approved", "rejected"]:
+            await callback.answer("Эта заявка уже закрыта одним из админов.")
+            return
 
-    await bot.send_message(
-        payout.user_id,
-        _("requisites_payout_rejected", payout_id=payout_id)
-    )
+        await bot.send_message(
+            payout.user_id,
+            _("requisites_payout_rejected", payout_id=payout_id)
+        )
 
-    await payout_dal.update_payout(session, payout_id, {"status": "rejected"})
+        await payout_dal.update_payout(session, payout_id, {"status": "rejected"})
 
-    db_user = await user_dal.get_user_by_id(session, payout.user_id)
+        db_user = await user_dal.get_user_by_id(session, payout.user_id)
 
-    await user_dal.update_user(session, db_user.user_id, {"balance": db_user.balance + payout.price})
+        await user_dal.update_user(session, db_user.user_id, {"balance": db_user.balance + payout.price})
 
-    await callback.answer("Успешно.")
+        await callback.answer("Успешно.")
+    except Exception as e:
+        logging.error(f"Error rejected payout handling with user {callback.message.from_user.id}: {e}")
+        await callback.answer("Ошибка! Обратитесь к разработчикам.", show_alert=True)
 
 
 @router.callback_query(F.data.startswith("user_action:"))
