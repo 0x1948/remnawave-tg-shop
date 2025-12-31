@@ -67,7 +67,45 @@ class NotificationService:
             ])
 
         return InlineKeyboardMarkup(inline_keyboard=buttons)
-    
+
+    @staticmethod
+    def _build_payout_keyboard(
+            translate: Callable[..., str],
+            user_id: int,
+            payout_id: int
+    ) -> InlineKeyboardMarkup:
+        buttons = [
+            [
+                InlineKeyboardButton(
+                    text=translate(
+                        "log_open_profile_link",
+                        default="👤 Открыть профиль",
+                    ),
+                    url=f"tg://user?id={user_id}",
+                )
+            ]
+        ]
+
+        buttons.append([
+            InlineKeyboardButton(
+                text=translate(
+                    "success_payout"
+                ),
+                callback_data=f"success_payout:{payout_id}",
+            )
+        ])
+
+        buttons.append([
+            InlineKeyboardButton(
+                text=translate(
+                    "rejected_payout"
+                ),
+                callback_data=f"rejected_payout:{payout_id}",
+            )
+        ])
+
+        return InlineKeyboardMarkup(inline_keyboard=buttons)
+
     async def _send_to_log_channel(
         self,
         message: str,
@@ -116,7 +154,7 @@ class NotificationService:
         except Exception as e:
             logging.error(f"Failed to queue notification to log channel {self.settings.LOG_CHAT_ID}: {e}")
     
-    async def _send_to_admins(self, message: str):
+    async def _send_to_admins(self, message: str, reply_markup: Optional[InlineKeyboardMarkup] = None):
         """Send message to all admin users using message queue"""
         if not self.settings.ADMIN_IDS:
             return
@@ -129,6 +167,7 @@ class NotificationService:
                     await self.bot.send_message(
                         chat_id=admin_id,
                         text=message,
+                        reply_markup=reply_markup,
                         parse_mode="HTML",
                         disable_web_page_preview=True
                     )
@@ -141,6 +180,7 @@ class NotificationService:
                 await queue_manager.send_message(
                     chat_id=admin_id,
                     text=message,
+                    reply_markup=reply_markup,
                     parse_mode="HTML",
                     disable_web_page_preview=True
                 )
@@ -249,37 +289,55 @@ class NotificationService:
         # Send to log channel
         profile_keyboard = self._build_profile_keyboard(_, user_id)
         await self._send_to_log_channel(message, reply_markup=profile_keyboard)
-    
-    async def notify_promo_activation(self, user_id: int, promo_code: str, bonus_days: int,
-                                    username: Optional[str] = None):
-        """Send notification about promo code activation"""
-        if not self.settings.LOG_PROMO_ACTIVATIONS:
-            return
-        
+
+    async def notify_new_payout(self, user_id: int, payout_id: int, price: int, timestamp, requisites,
+                                      username: Optional[str] = None):
+        """Send notification about new payout"""
         admin_lang = self.settings.DEFAULT_LANGUAGE
         _ = lambda k, **kw: self.i18n.gettext(admin_lang, k, **kw) if self.i18n else k
-        
+
         user_display = self._format_user_display(
             user_id=user_id,
             username=username,
         )
-        
+
         message = _(
-            "log_promo_activation",
-            default="🎁 <b>Активирован промокод</b>\n\n"
-                   "👤 Пользователь: {user_display}\n"
-                   "🏷 Код: <code>{promo_code}</code>\n"
-                   "🎯 Бонус: <b>+{bonus_days} дн.</b>\n"
-                   "🕐 Время: {timestamp}",
+            "requisites_payout_created_admin",
             user_display=user_display,
-            promo_code=promo_code,
-            bonus_days=bonus_days,
-            timestamp=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            amount=price,
+            timestamp=timestamp,
+            requisites=requisites
         )
-        
-        # Send to log channel
-        profile_keyboard = self._build_profile_keyboard(_, user_id)
-        await self._send_to_log_channel(message, reply_markup=profile_keyboard)
+
+        profile_keyboard = self._build_payout_keyboard(_, user_id, payout_id=payout_id)
+        await self._send_to_admins(message, reply_markup=profile_keyboard)
+
+
+async def notify_promo_activation(self, user_id: int, promo_code: str, bonus_days: int,
+                                  username: Optional[str] = None):
+    """Send notification about promo code activation"""
+    if not self.settings.LOG_PROMO_ACTIVATIONS:
+        return
+
+    admin_lang = self.settings.DEFAULT_LANGUAGE
+    _ = lambda k, **kw: self.i18n.gettext(admin_lang, k, **kw) if self.i18n else k
+
+    user_display = self._format_user_display(
+        user_id=user_id,
+        username=username,
+    )
+
+    message = _(
+        "log_promo_activation",
+        user_display=user_display,
+        promo_code=promo_code,
+        bonus_days=bonus_days,
+        timestamp=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    )
+
+    # Send to log channel
+    profile_keyboard = self._build_profile_keyboard(_, user_id)
+    await self._send_to_log_channel(message, reply_markup=profile_keyboard)
     
     async def notify_trial_activation(self, user_id: int, end_date: datetime,
                                     username: Optional[str] = None):

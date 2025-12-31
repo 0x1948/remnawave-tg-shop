@@ -242,6 +242,17 @@ async def process_requisites_input(message: types.Message, state: FSMContext,
 
         new_payout, was_created = await payout_dal.create_payout(session, payout_data)
 
+        from bot.services.notification_service import NotificationService
+        notification_service = NotificationService(bot, settings, i18n)
+        await notification_service.notify_new_payout(
+            user_id=user.id,
+            payout_id=new_payout.payout_id,
+            price=balance,
+            timestamp=new_payout.created_at,
+            requisites=code_input,
+            username=user.username
+        )
+
         response_to_user_text = _("requisites_payout_good", payout_id=new_payout.payout_id, price=balance)
 
     if settings.PHOTO_ID_GIFT_BRO:
@@ -259,6 +270,7 @@ async def process_requisites_input(message: types.Message, state: FSMContext,
     logging.info(
         f"Payout input '{code_input}' processing finished for user {message.from_user.id} (payout_id {new_payout.payout_id}). State cleared."
     )
+
 
 
 @router.callback_query(F.data.startswith("referral_action:"))
