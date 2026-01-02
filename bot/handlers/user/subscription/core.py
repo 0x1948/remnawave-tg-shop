@@ -120,7 +120,7 @@ async def gift_display_sub_options(event: Union[types.Message, types.CallbackQue
         try:
             await event.answer()
         except Exception:
-            pass
+            pass#
     else:
         await target_message_obj.answer(text_content, reply_markup=reply_markup)
 
