@@ -405,7 +405,7 @@ async def process_user_search_handler(message: types.Message, state: FSMContext,
 @router.callback_query(F.data.startswith("success_payout:"))
 async def success_payout_handler(callback: types.CallbackQuery, state: FSMContext,
                              settings: Settings, i18n_data: dict, bot: Bot,
-                             subscription_service: SubscriptionService,
+                             subscription_servicel: SubscriptionService,
                              panel_service: PanelApiService,
                              session: AsyncSession):
     try:
