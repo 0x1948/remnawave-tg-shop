@@ -237,12 +237,8 @@ def get_payment_method_keyboard(months: int, price: float,
         builder.button(text=_("pay_with_sbp_button"),
                        callback_data=f"pay_fk:{months}:{price}{add_text}")
     if settings.YOOKASSA_ENABLED:
-        if is_gift:
-            builder.button(text=_("pay_with_yookassa_button"),
-                           callback_data=f"pay_yk:{months}:{price}{add_text}")
-        else:
-            builder.button(text=_("pay_with_yookassa_button"),
-                           callback_data=f"pay_yk_new:{months}:{price}")
+        builder.button(text=_("pay_with_yookassa_button"),
+                       callback_data=f"pay_yk_new:{months}:{price}{add_text}")
     if settings.TRIBUTE_ENABLED and tribute_url:
         builder.button(text=_("pay_with_tribute_button"), url=tribute_url)
     if settings.STARS_ENABLED and stars_price is not None:
