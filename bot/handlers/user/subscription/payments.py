@@ -1307,7 +1307,6 @@ async def pay_stars_callback_handler(
 
     gift_text = ":gift" if is_gift else ""
     if payment_db_id:
-        await callback.message.delete()
         invoice_url = await stars_service.sending_invoice(payment_db_id, months, stars_price, get_text("payment_description_subscription", months=months), payment_description)
         if invoice_url:
             try:
