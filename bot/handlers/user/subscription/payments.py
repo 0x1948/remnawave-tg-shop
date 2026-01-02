@@ -1308,23 +1308,26 @@ async def pay_stars_callback_handler(
     gift_text = ":gift" if is_gift else ""
     if payment_db_id:
         await callback.message.delete()
-        invoice_url = await stars_service.sending_invoice(payment_db_id, user_id, months, stars_price, get_text("payment_description_subscription", months=months), payment_description)
+        invoice_url = await stars_service.sending_invoice(payment_db_id, months, stars_price, get_text("payment_description_subscription", months=months), payment_description)
         if invoice_url:
             try:
                 if settings.PHOTO_ID_STARS_PAY:
-                    await callback.message.answer_photo(
-                        photo=settings.PHOTO_ID_STARS_PAY,
-                        caption=get_text("payment_invoice_sent_message", months=months),
+                    await callback.message.edit_media(
+                        media=InputMediaPhoto(
+                            media=settings.PHOTO_ID_STARS_PAY,
+                            caption=get_text("payment_invoice_sent_message", months=months),
+                        ),
                         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
                             [InlineKeyboardButton(
                                 text=get_text("pay_button"),
                                 url=invoice_url,
-                            ),
-                            InlineKeyboardButton(
-                                text=get_text("back_to_payment_methods_button"),
-                                callback_data=f"subscribe_period:{months}{gift_text}",
-                            )]
-                        ])
+                            )],
+                            [InlineKeyboardButton(
+                                    text=get_text("back_to_payment_methods_button"),
+                                    callback_data=f"subscribe_period:{months}{gift_text}",
+                                )]
+                            ]),
+                        disable_web_page_preview=True
                     )
                 else:
                     await callback.message.answer(
