@@ -65,7 +65,6 @@ class StarsService:
                 currency="XTR",
                 prices=prices,
             )
-            logging.info(dict(msg))
             return msg.message_id
         except Exception as e_inv:
             logging.error(f"Failed to send Telegram Stars invoice: {e_inv}",
