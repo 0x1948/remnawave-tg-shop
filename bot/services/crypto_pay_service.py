@@ -63,6 +63,7 @@ class CryptoPayService:
         months: int,
         amount: float,
         description: str,
+        is_gift: bool = False
     ):
         if not self.configured or not self.client:
             logging.error("CryptoPayService not configured")
@@ -80,6 +81,7 @@ class CryptoPayService:
                     "description": description,
                     "subscription_duration_months": months,
                     "provider": "cryptopay",
+                    "is_gift": is_gift
                 },
             )
             await session.commit()

@@ -77,6 +77,7 @@ class FreeKassaService:
         ip_address: Optional[str] = None,
         payment_method_id: Optional[int] = None,
         extra_params: Optional[Dict[str, Any]] = None,
+        is_gift: bool = False
     ) -> Tuple[bool, Dict[str, Any]]:
         if not self.configured:
             logging.error("FreeKassaService is not configured. Cannot create order.")
