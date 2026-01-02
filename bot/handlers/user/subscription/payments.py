@@ -381,6 +381,7 @@ async def select_subscription_period_callback_handler(callback: types.CallbackQu
 
     try:
         months = int(callback.data.split(":")[1])
+        is_gift = True if len(callback.data.split(":")) > 2 else False
     except (ValueError, IndexError):
         logging.error(f"Invalid subscription period in callback_data: {callback.data}")
         try:
@@ -413,6 +414,7 @@ async def select_subscription_period_callback_handler(callback: types.CallbackQu
         current_lang,
         i18n,
         settings,
+        is_gift=is_gift
     )
 
     try:

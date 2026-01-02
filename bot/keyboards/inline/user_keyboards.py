@@ -197,9 +197,15 @@ def get_subscription_options_keyboard(subscription_options: Dict[
                     builder.button(text=button_text,
                                    callback_data=f"subscribe_period:{months}")
         builder.adjust(2)
-    builder.row(
-        InlineKeyboardButton(text=_(key="back_to_main_menu_button"),
-                             callback_data="main_action:own"))
+
+    if is_gift:
+        builder.row(
+            InlineKeyboardButton(text=_(key="back_to_main_menu_button"),
+                                 callback_data="main_action:gift_vpn"))
+    else:
+        builder.row(
+            InlineKeyboardButton(text=_(key="back_to_main_menu_button"),
+                                 callback_data="main_action:own"))
     return builder.as_markup()
 
 def get_gift_vpn_kb(lang: str, i18n_instance) -> InlineKeyboardMarkup:
@@ -223,25 +229,30 @@ def get_payment_method_keyboard(months: int, price: float,
                                 tribute_url: Optional[str],
                                 stars_price: Optional[int],
                                 currency_symbol_val: str, lang: str,
-                                i18n_instance, settings: Settings) -> InlineKeyboardMarkup:
+                                i18n_instance, settings: Settings, is_gift: bool = True) -> InlineKeyboardMarkup:
     _ = lambda key, **kwargs: i18n_instance.gettext(lang, key, **kwargs)
     builder = InlineKeyboardBuilder()
+    add_text = ":gift" if is_gift else ""
     if settings.FREEKASSA_ENABLED:
         builder.button(text=_("pay_with_sbp_button"),
-                       callback_data=f"pay_fk:{months}:{price}")
+                       callback_data=f"pay_fk:{months}:{price}{add_text}")
     if settings.YOOKASSA_ENABLED:
-        builder.button(text=_("pay_with_yookassa_button"),
-                       callback_data=f"pay_yk_new:{months}:{price}")
+        if is_gift:
+            builder.button(text=_("pay_with_yookassa_button"),
+                           callback_data=f"pay_yk:{months}:{price}{add_text}")
+        else:
+            builder.button(text=_("pay_with_yookassa_button"),
+                           callback_data=f"pay_yk_new:{months}:{price}")
     if settings.TRIBUTE_ENABLED and tribute_url:
         builder.button(text=_("pay_with_tribute_button"), url=tribute_url)
     if settings.STARS_ENABLED and stars_price is not None:
         builder.button(text=_("pay_with_stars_button"),
-                       callback_data=f"pay_stars:{months}:{stars_price}")
+                       callback_data=f"pay_stars:{months}:{stars_price}{add_text}")
     if settings.CRYPTOPAY_ENABLED:
         builder.button(text=_("pay_with_cryptopay_button"),
-                       callback_data=f"pay_crypto:{months}:{price}")
+                       callback_data=f"pay_crypto:{months}:{price}{add_text}")
     builder.button(text=_(key="cancel_button"),
-                   callback_data="main_action:subscribe")
+                   callback_data="main_action:gift")
     builder.adjust(1)
     return builder.as_markup()
 
