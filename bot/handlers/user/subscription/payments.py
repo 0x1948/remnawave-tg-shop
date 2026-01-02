@@ -242,12 +242,18 @@ async def _initiate_yk_payment(
         else:
             end_date, total_days = calc_months_forward(months=int(months))
 
+        text = ""
+        if is_gift:
+            text = get_text("payment_link_message_yookassa_gift", price=int(price_rub), period=total_days, num_pay=payment_response_yk.get('id'))
+        else:
+            text = get_text(key="payment_link_message_yookassa", price=int(price_rub), date=end_date, period=total_days, num_pay=payment_response_yk.get('id'))
+
         try:
             if settings.PHOTO_ID_CRYPTO_PAY:
                 await callback.message.edit_media(
                     media=InputMediaPhoto(
                         media=settings.PHOTO_ID_RUS_PAY,
-                        caption=get_text(key="payment_link_message_yookassa", price=int(price_rub), date=end_date, period=total_days, num_pay=payment_response_yk.get('id')),
+                        caption=text,
                     ),
                     reply_markup=get_payment_url_keyboard(
                         payment_response_yk["confirmation_url"],
@@ -260,7 +266,7 @@ async def _initiate_yk_payment(
                 )
             else:
                 await callback.message.edit_text(
-                    get_text(key="payment_link_message_yookassa", price=int(price_rub), date=end_date, period=total_days, num_pay=payment_response_yk.get('id')),
+                    text,
                     reply_markup=get_payment_url_keyboard(
                         payment_response_yk["confirmation_url"],
                         current_lang,
@@ -276,7 +282,7 @@ async def _initiate_yk_payment(
             )
             try:
                 await callback.message.answer(
-                    get_text(key="payment_link_message_yookassa", price=int(price_rub), date=end_date, period=total_days, num_pay=payment_response_yk.get('id')),
+                    text,
                     reply_markup=get_payment_url_keyboard(
                         payment_response_yk["confirmation_url"],
                         current_lang,
@@ -1197,13 +1203,19 @@ async def pay_crypto_callback_handler(
 
     gift_text = ":gift" if is_gift else ""
 
+    text = ""
+    if is_gift:
+        text = get_text(key="payment_link_message_crypto_gift", price=int(price_amount), date=end_date, period=total_days, num_pay=payment_id)
+    else:
+        text = get_text(key="payment_link_message_crypto", price=int(price_amount), date=end_date, period=total_days, num_pay=payment_id)
+
     if invoice_url:
         try:
             if settings.PHOTO_ID_CRYPTO_PAY:
                 await callback.message.edit_media(
                     media=InputMediaPhoto(
                         media=settings.PHOTO_ID_CRYPTO_PAY,
-                        caption=get_text(key="payment_link_message_crypto", price=int(price_amount), date=end_date, period=total_days, num_pay=payment_id),
+                        caption=text,
                     ),
                     reply_markup=get_payment_url_keyboard(
                         invoice_url,
@@ -1216,7 +1228,7 @@ async def pay_crypto_callback_handler(
                 )
             else:
                 await callback.message.edit_text(
-                    get_text(key="payment_link_message_crypto", price=int(price_amount), date=end_date, period=total_days, num_pay=payment_id),
+                    text,
                     reply_markup=get_payment_url_keyboard(
                         invoice_url,
                         current_lang,
@@ -1229,7 +1241,7 @@ async def pay_crypto_callback_handler(
         except Exception:
             try:
                 await callback.message.answer(
-                    get_text(key="payment_link_message_crypto", price=int(price_amount), date=end_date, period=total_days, num_pay=payment_id),
+                    text,
                     reply_markup=get_payment_url_keyboard(
                         invoice_url,
                         current_lang,
@@ -1308,6 +1320,13 @@ async def pay_stars_callback_handler(
     )
 
     gift_text = ":gift" if is_gift else ""
+
+    text = ""
+    if is_gift:
+        text = get_text("payment_link_message_stars_gift", price=stars_price, period=total_days, months=months)
+    else:
+        text = get_text("payment_link_message_stars", price=stars_price, date=end_date, period=total_days, months=months)
+
     if payment_db_id:
         invoice_url = await stars_service.sending_invoice(payment_db_id, months, stars_price, get_text("payment_description_subscription", months=months), payment_description)
         if invoice_url:
@@ -1316,7 +1335,7 @@ async def pay_stars_callback_handler(
                     await callback.message.edit_media(
                         media=InputMediaPhoto(
                             media=settings.PHOTO_ID_STARS_PAY,
-                            caption=get_text("payment_link_message_stars_gift", price=stars_price, date=end_date, period=total_days, months=months),
+                            caption=text,
                         ),
                         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
                             [InlineKeyboardButton(
@@ -1332,7 +1351,7 @@ async def pay_stars_callback_handler(
                     )
                 else:
                     await callback.message.edit_text(
-                        get_text("payment_link_message_stars_gift", months=months),
+                        text,
                         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
                             [InlineKeyboardButton(
                                 text=get_text("pay_button"),
