@@ -1314,7 +1314,7 @@ async def pay_stars_callback_handler(
                     await callback.message.edit_media(
                         media=InputMediaPhoto(
                             media=settings.PHOTO_ID_STARS_PAY,
-                            caption=get_text("payment_invoice_sent_message", months=months),
+                            caption=get_text("payment_link_message_stars_gift", months=months),
                         ),
                         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
                             [InlineKeyboardButton(
@@ -1329,8 +1329,8 @@ async def pay_stars_callback_handler(
                         disable_web_page_preview=True
                     )
                 else:
-                    await callback.message.answer(
-                        get_text("payment_invoice_sent_message", months=months),
+                    await callback.message.edit_text(
+                        get_text("payment_link_message_stars_gift", months=months),
                         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
                             [InlineKeyboardButton(
                                 text=get_text("pay_button"),
