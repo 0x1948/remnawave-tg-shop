@@ -129,10 +129,6 @@ async def gift_display_sub_options(event: Union[types.Message, types.CallbackQue
 async def reshow_subscription_options_callback(callback: types.CallbackQuery, i18n_data: dict, settings: Settings, session: AsyncSession):
     await display_subscription_options(callback, i18n_data, settings, session)
 
-@router.callback_query(F.data == "main_action:gift_vpn")
-async def gift_display_subscription_options_callback(callback: types.CallbackQuery, i18n_data: dict, settings: Settings, session: AsyncSession):
-    await gift_display_sub_options(callback, i18n_data, settings, session)
-
 
 async def my_subscription_command_handler(
     event: Union[types.Message, types.CallbackQuery],
