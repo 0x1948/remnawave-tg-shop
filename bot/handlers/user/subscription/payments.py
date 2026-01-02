@@ -593,7 +593,10 @@ async def pay_yk_new_card_handler(callback: types.CallbackQuery, settings: Setti
         return
 
     try:
-        _, data_payload = callback.data.split(":", 1)
+        splited = callback.data.split(":")
+        is_gift = True if len(splited) > 3 else False
+        months = splited[1]
+        price_amount = float(splited[2])
     except ValueError:
         logging.error(f"Invalid pay_yk_new data in callback: {callback.data}")
         try:
@@ -602,7 +605,7 @@ async def pay_yk_new_card_handler(callback: types.CallbackQuery, settings: Setti
             pass
         return
 
-    parsed = _parse_months_and_price(data_payload[1], data_payload[2])
+    parsed = _parse_months_and_price(months, price_amount)
     if not parsed:
         logging.error(f"Invalid pay_yk_new payload structure: {callback.data}")
         try:
@@ -619,6 +622,14 @@ async def pay_yk_new_card_handler(callback: types.CallbackQuery, settings: Setti
         getattr(settings, 'YOOKASSA_AUTOPAYMENTS_REQUIRE_CARD_BINDING', True)
     )
 
+    back_callback = ""
+    if float(months) == 0.5:
+        back_callback = f"main_action:request_trial"
+    elif is_gift:
+        back_callback = f"subscribe_period:{months}:gift"
+    else:
+        back_callback = f"subscribe_period:{months}"
+
     await _initiate_yk_payment(
         callback,
         settings=settings,
@@ -632,7 +643,8 @@ async def pay_yk_new_card_handler(callback: types.CallbackQuery, settings: Setti
         price_rub=price_rub,
         currency_code_for_yk=currency_code_for_yk,
         save_payment_method=autopay_enabled and autopay_require_binding,
-        back_callback=f"main_action:request_trial" if float(months) == 0.5 else f"subscribe_period:{months}"
+        back_callback=back_callback,
+        is_gift=is_gift
     )
     try:
         await callback.answer()
