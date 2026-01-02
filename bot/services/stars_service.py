@@ -26,7 +26,7 @@ class StarsService:
         self.referral_service = referral_service
 
     async def create_invoice(self, session: AsyncSession, user_id: int, months: int,
-                             stars_price: int, title: str, description: str):
+                             stars_price: int, title: str, description: str, is_gift: bool = False):
         payment_record_data = {
             "user_id": user_id,
             "amount": float(stars_price),
@@ -35,6 +35,7 @@ class StarsService:
             "description": description,
             "subscription_duration_months": months,
             "provider": "telegram_stars",
+            "is_gift": is_gift
         }
         try:
             db_payment_record = await payment_dal.create_payment_record(
@@ -64,6 +65,7 @@ class StarsService:
                 currency="XTR",
                 prices=prices,
             )
+            logging.info(dict(msg))
             return msg.message_id
         except Exception as e_inv:
             logging.error(f"Failed to send Telegram Stars invoice: {e_inv}",
