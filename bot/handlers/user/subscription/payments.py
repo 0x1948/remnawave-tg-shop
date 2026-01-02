@@ -1173,7 +1173,7 @@ async def pay_crypto_callback_handler(
         splited = callback.data.split(":")
         is_gift = True if len(splited) > 3 else False
         months = int(splited[1])
-        price_amount = int(splited[2])
+        price_amount = float(splited[2])
     except (ValueError, IndexError):
         try:
             await callback.answer(get_text("error_try_again"), show_alert=True)
@@ -1195,6 +1195,8 @@ async def pay_crypto_callback_handler(
 
     end_date, total_days = calc_months_forward(months)
 
+    gift_text = ":gift" if is_gift else ""
+
     if invoice_url:
         try:
             if settings.PHOTO_ID_CRYPTO_PAY:
@@ -1207,7 +1209,7 @@ async def pay_crypto_callback_handler(
                         invoice_url,
                         current_lang,
                         i18n,
-                        back_callback=f"subscribe_period:{months}",
+                        back_callback=f"subscribe_period:{months}{gift_text}",
                         back_text_key="back_to_payment_methods_button",
                     ),
                     disable_web_page_preview=False,
@@ -1219,7 +1221,7 @@ async def pay_crypto_callback_handler(
                         invoice_url,
                         current_lang,
                         i18n,
-                        back_callback=f"subscribe_period:{months}",
+                        back_callback=f"subscribe_period:{months}{gift_text}",
                         back_text_key="back_to_payment_methods_button",
                     ),
                     disable_web_page_preview=False,
@@ -1232,7 +1234,7 @@ async def pay_crypto_callback_handler(
                         invoice_url,
                         current_lang,
                         i18n,
-                        back_callback=f"subscribe_period:{months}",
+                        back_callback=f"subscribe_period:{months}{gift_text}",
                         back_text_key="back_to_payment_methods_button",
                     ),
                     disable_web_page_preview=False,
@@ -1314,7 +1316,7 @@ async def pay_stars_callback_handler(
                     await callback.message.edit_media(
                         media=InputMediaPhoto(
                             media=settings.PHOTO_ID_STARS_PAY,
-                            caption=get_text("payment_invoice_sent_message", months=months),
+                            caption=get_text("payment_link_message_stars_gift", months=months),
                         ),
                         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
                             [InlineKeyboardButton(
@@ -1329,8 +1331,8 @@ async def pay_stars_callback_handler(
                         disable_web_page_preview=True
                     )
                 else:
-                    await callback.message.answer(
-                        get_text("payment_invoice_sent_message", months=months),
+                    await callback.message.edit_text(
+                        get_text("payment_link_message_stars_gift", months=months),
                         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
                             [InlineKeyboardButton(
                                 text=get_text("pay_button"),

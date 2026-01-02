@@ -1,12 +1,16 @@
 import logging
+import random
+import string
+from datetime import datetime, timezone, timedelta, date
 from typing import Optional
+from xml.sax import parse
 
 from aiogram import Bot, types
 from aiogram.types import LabeledPrice
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config.settings import Settings
-from db.dal import payment_dal, user_dal
+from db.dal import payment_dal, user_dal, promo_code_dal
 from .subscription_service import SubscriptionService
 from .referral_service import ReferralService
 from bot.middlewares.i18n import JsonI18n
@@ -89,6 +93,54 @@ class StarsService:
                 exc_info=True)
             return
 
+        db_user = await user_dal.get_user_by_id(session, message.from_user.id)
+        current_lang = db_user.language_code if db_user and db_user.language_code else self.settings.DEFAULT_LANGUAGE
+        i18n: JsonI18n = i18n_data.get("i18n_instance")
+        _ = lambda k, **kw: i18n.gettext(current_lang, k, **kw) if i18n else k
+
+        payment = await payment_dal.get_payment_by_id(session, payment_db_id)
+
+        if payment.is_gift:
+            today = date.today()
+            new_month = (today.month - 1 + months) % 12 + 1
+            new_year = today.year + (today.month - 1 + months) // 12
+            last_day = (date(new_year + (new_month == 12), new_month % 12 + 1, 1) - timedelta(days=1)).day
+            alphabet = string.ascii_uppercase + string.digits
+            code = ''.join(random.choice(alphabet) for _ in range(10))
+
+            promo_data = {
+                "code": code,
+                "bonus_days": last_day,
+                "max_activations": 1,
+                "current_activations": 0,
+                "is_active": True,
+                "created_by_admin_id": 0,
+                "created_at": datetime.now(timezone.utc),
+                "valid_until": None
+            }
+
+            created_promo = await promo_code_dal.create_promo_code(session, promo_data)
+            await session.commit()
+
+            text = _("payment_successful_gift", link=f"https://t.me/VoronVPNbot?start=promo_{created_promo}", days=last_day)
+            await self.bot.send_message(message.from_user.id, text, parse_mode="HTML")
+
+            try:
+                notification_service = NotificationService(self.bot, self.settings, self.i18n)
+                user = await user_dal.get_user_by_id(session, message.from_user.id)
+                await notification_service.notify_payment_received(
+                    user_id=message.from_user.id,
+                    amount=float(stars_amount),
+                    currency="XTR",
+                    months=months,
+                    payment_provider="stars",
+                    username=user.username if user else None
+                )
+            except Exception as e:
+                logging.error(f"Failed to send stars payment notification: {e}")
+
+            return
+
         activation_details = await self.subscription_service.activate_subscription(
             session,
             message.from_user.id,
@@ -117,10 +169,6 @@ class StarsService:
             final_end = activation_details["end_date"]
 
         # Always use user's language from DB for user-facing messages
-        db_user = await user_dal.get_user_by_id(session, message.from_user.id)
-        current_lang = db_user.language_code if db_user and db_user.language_code else self.settings.DEFAULT_LANGUAGE
-        i18n: JsonI18n = i18n_data.get("i18n_instance")
-        _ = lambda k, **kw: i18n.gettext(current_lang, k, **kw) if i18n else k
 
         config_link = activation_details.get("subscription_url") or _(
             "config_link_not_available"
