@@ -122,6 +122,18 @@ def _migration_0006_create_payouts_table(connection: Connection) -> None:
         "CREATE INDEX idx_payouts_status ON payouts(status)"
     ))
 
+def _migration_0007_add_payment_is_gift(connection: Connection) -> None:
+    inspector = inspect(connection)
+    columns = {col["name"] for col in inspector.get_columns("payments")}
+
+    if "is_gift" in columns:
+        return
+
+    connection.execute(text("""
+        ALTER TABLE payments
+        ADD COLUMN is_gift BOOLEAN DEFAULT FALSE
+    """))
+
 MIGRATIONS: List[Migration] = [
     Migration(
         id="0001_add_channel_subscription_fields",
@@ -152,6 +164,11 @@ MIGRATIONS: List[Migration] = [
         id="0006_create_payouts_table",
         description="Create payouts table",
         upgrade=_migration_0006_create_payouts_table,
+    ),
+    Migration(
+        id="0007_add_payment_is_gift",
+        description="Add is_gift flag to payments table",
+        upgrade=_migration_0007_add_payment_is_gift,
     )
 ]
 
