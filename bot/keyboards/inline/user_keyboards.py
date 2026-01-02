@@ -1,3 +1,5 @@
+from gc import callbacks
+
 from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardButton
 from aiogram.types import InlineKeyboardMarkup, WebAppInfo
 from typing import Dict, Optional, List, Tuple
@@ -178,7 +180,7 @@ def get_trial_confirmation_keyboard(lang: str,
 
 def get_subscription_options_keyboard(subscription_options: Dict[
     int, Optional[int]], currency_symbol_val: str, lang: str,
-                                      i18n_instance) -> InlineKeyboardMarkup:
+                                      i18n_instance, is_gift: bool = True) -> InlineKeyboardMarkup:
     _ = lambda key, **kwargs: i18n_instance.gettext(lang, key, **kwargs)
     builder = InlineKeyboardBuilder()
     if subscription_options:
@@ -188,12 +190,32 @@ def get_subscription_options_keyboard(subscription_options: Dict[
                                 months=months,
                                 price=int(price),
                                 currency_symbol=currency_symbol_val)
-                builder.button(text=button_text,
-                               callback_data=f"subscribe_period:{months}")
+                if is_gift:
+                    builder.button(text=button_text,
+                                   callback_data=f"subscribe_period:{months}:gift")
+                else:
+                    builder.button(text=button_text,
+                                   callback_data=f"subscribe_period:{months}")
         builder.adjust(2)
     builder.row(
         InlineKeyboardButton(text=_(key="back_to_main_menu_button"),
                              callback_data="main_action:back_to_start"))
+    return builder.as_markup()
+
+def get_gift_vpn_kb(lang: str, i18n_instance) -> InlineKeyboardMarkup:
+    _ = lambda key, **kwargs: i18n_instance.gettext(lang, key, **kwargs)
+    builder = InlineKeyboardBuilder()
+    builder.row(
+        InlineKeyboardButton(
+            text=_(key="menu_gift"),
+            callback_data="main_action:gift"
+        )
+    )
+
+    builder.row(
+        InlineKeyboardButton(text=_(key="back_to_main_menu_button"),
+                             callback_data="main_action:back_to_start"))
+    builder.adjust(1)
     return builder.as_markup()
 
 

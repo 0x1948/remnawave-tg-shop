@@ -12,7 +12,8 @@ from bot.keyboards.inline.user_keyboards import (
     get_subscription_options_keyboard,
     get_back_to_main_menu_markup,
     get_autorenew_confirm_keyboard,
-    get_subscribe_ex_kb
+    get_subscribe_ex_kb,
+    get_gift_vpn_kb
 )
 from bot.services.subscription_service import SubscriptionService
 from bot.services.panel_api_service import PanelApiService
@@ -23,7 +24,7 @@ from db.models import Subscription
 router = Router(name="user_subscription_core_router")
 
 
-async def display_subscription_options(event: Union[types.Message, types.CallbackQuery], i18n_data: dict, settings: Settings, session: AsyncSession):
+async def display_subscription_options(event: Union[types.Message, types.CallbackQuery], i18n_data: dict, settings: Settings, session: AsyncSession, is_gift: bool = False):
     current_lang = i18n_data.get("current_language", settings.DEFAULT_LANGUAGE)
     i18n: Optional[JsonI18n] = i18n_data.get("i18n_instance")
 
@@ -43,8 +44,11 @@ async def display_subscription_options(event: Union[types.Message, types.Callbac
     currency_symbol_val = settings.DEFAULT_CURRENCY_SYMBOL
     text_content = get_text("select_subscription_period") if settings.subscription_options else get_text("no_subscription_options_available")
 
+    if is_gift:
+        text_content = get_text("select_subscription_period_gift")
+
     reply_markup = (
-        get_subscription_options_keyboard(settings.subscription_options, currency_symbol_val, current_lang, i18n)
+        get_subscription_options_keyboard(settings.subscription_options, currency_symbol_val, current_lang, i18n, is_gift=is_gift)
         if settings.subscription_options
         else get_back_to_main_menu_markup(current_lang, i18n)
     )
@@ -73,9 +77,61 @@ async def display_subscription_options(event: Union[types.Message, types.Callbac
     else:
         await target_message_obj.answer(text_content, reply_markup=reply_markup)
 
+async def gift_display_sub_options(event: Union[types.Message, types.CallbackQuery], i18n_data: dict, settings: Settings, session: AsyncSession):
+    current_lang = i18n_data.get("current_language", settings.DEFAULT_LANGUAGE)
+    i18n: Optional[JsonI18n] = i18n_data.get("i18n_instance")
+
+    get_text = lambda key, **kwargs: i18n.gettext(current_lang, key, **kwargs) if i18n else key
+
+    if not i18n:
+        err_msg = "Language service error."
+        if isinstance(event, types.CallbackQuery):
+            try:
+                await event.answer(err_msg, show_alert=True)
+            except Exception:
+                pass
+        elif isinstance(event, types.Message):
+            await event.answer(err_msg)
+        return
+
+    text_content = get_text("menu_gift_vpn_text")
+
+    reply_markup = (
+        get_gift_vpn_kb(current_lang, i18n)
+    )
+
+    target_message_obj = event.message if isinstance(event, types.CallbackQuery) else event
+    if not target_message_obj:
+        if isinstance(event, types.CallbackQuery):
+            try:
+                await event.answer(get_text("error_occurred_try_again"), show_alert=True)
+            except Exception:
+                pass
+        return
+
+    if isinstance(event, types.CallbackQuery):
+        try:
+            if settings.PHOTO_ID_GIFT_BRO:
+                await target_message_obj.edit_media(media=InputMediaPhoto(media=settings.PHOTO_ID_GIFT_BRO, caption=text_content), reply_markup=reply_markup, disable_web_page_preview=True)
+            else:
+                await target_message_obj.edit_text(text_content, reply_markup=reply_markup)
+        except Exception:
+            await target_message_obj.answer(text_content, reply_markup=reply_markup)
+        try:
+            await event.answer()
+        except Exception:
+            pass
+    else:
+        await target_message_obj.answer(text_content, reply_markup=reply_markup)
+
+
 @router.callback_query(F.data == "main_action:subscribe")
 async def reshow_subscription_options_callback(callback: types.CallbackQuery, i18n_data: dict, settings: Settings, session: AsyncSession):
     await display_subscription_options(callback, i18n_data, settings, session)
+
+@router.callback_query(F.data == "main_action:gift_vpn")
+async def gift_display_subscription_options_callback(callback: types.CallbackQuery, i18n_data: dict, settings: Settings, session: AsyncSession):
+    await gift_display_sub_options(callback, i18n_data, settings, session)
 
 
 async def my_subscription_command_handler(
