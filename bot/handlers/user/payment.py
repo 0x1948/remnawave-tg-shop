@@ -236,7 +236,7 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
             raise Exception(
                 f"DB Error: Could not update payment record {payment_db_id}")
 
-        payment = await payment_dal.get_payment_by_id(session, payment_db_id)
+        payment = await payment_dal.get_payment_by_db_id(session, payment_db_id)
         user_lang = db_user.language_code if db_user and db_user.language_code else settings.DEFAULT_LANGUAGE
         _ = lambda key, **kwargs: i18n.gettext(user_lang, key, **kwargs)
 
