@@ -1305,10 +1305,11 @@ async def pay_stars_callback_handler(
         is_gift=is_gift
     )
 
+    gift_text = ":gift" if is_gift else ""
     if payment_db_id:
         await callback.message.delete()
-        msg_id = await stars_service.sending_invoice(payment_db_id, user_id, months, stars_price, get_text("payment_description_subscription", months=months), payment_description)
-        if msg_id:
+        invoice_url = await stars_service.sending_invoice(payment_db_id, user_id, months, stars_price, get_text("payment_description_subscription", months=months), payment_description)
+        if invoice_url:
             try:
                 if settings.PHOTO_ID_STARS_PAY:
                     await callback.message.answer_photo(
@@ -1316,8 +1317,12 @@ async def pay_stars_callback_handler(
                         caption=get_text("payment_invoice_sent_message", months=months),
                         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
                             [InlineKeyboardButton(
+                                text=get_text("pay_button"),
+                                url=invoice_url,
+                            ),
+                            InlineKeyboardButton(
                                 text=get_text("back_to_payment_methods_button"),
-                                callback_data=f"subscribe_period:{months}:{msg_id}",
+                                callback_data=f"subscribe_period:{months}{gift_text}",
                             )]
                         ])
                     )
@@ -1326,10 +1331,14 @@ async def pay_stars_callback_handler(
                         get_text("payment_invoice_sent_message", months=months),
                         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
                             [InlineKeyboardButton(
-                                text=get_text("back_to_payment_methods_button"),
-                                callback_data=f"subscribe_period:{months}:{msg_id}",
-                            )]
-                        ]),
+                                text=get_text("pay_button"),
+                                url=invoice_url,
+                            ),
+                                InlineKeyboardButton(
+                                    text=get_text("back_to_payment_methods_button"),
+                                    callback_data=f"subscribe_period:{months}{gift_text}",
+                                )]
+                        ])
                     )
             except Exception as e_edit:
                 logging.warning(f"Stars payment: failed to show invoice info message ({e_edit})")
