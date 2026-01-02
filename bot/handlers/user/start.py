@@ -1045,6 +1045,9 @@ async def main_action_callback_handler(
             callback, state, i18n_data, settings, session)
     elif action == "gift_vpn":
         await user_subscription_handlers.gift_display_sub_options(callback, i18n_data, settings, session)
+    elif action == "gift":
+        await user_subscription_handlers.display_subscription_options(
+            callback, i18n_data, settings, session, is_gift=True)
     elif action == "request_trial":
         await send_trial_text(callback, i18n_data, settings, session)
     elif action == "language":

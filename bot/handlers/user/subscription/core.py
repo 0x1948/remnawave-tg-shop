@@ -120,10 +120,9 @@ async def gift_display_sub_options(event: Union[types.Message, types.CallbackQue
         try:
             await event.answer()
         except Exception:
-            pass#
+            pass
     else:
         await target_message_obj.answer(text_content, reply_markup=reply_markup)
-
 
 @router.callback_query(F.data == "main_action:subscribe")
 async def reshow_subscription_options_callback(callback: types.CallbackQuery, i18n_data: dict, settings: Settings, session: AsyncSession):
