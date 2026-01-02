@@ -122,7 +122,7 @@ class StarsService:
             created_promo = await promo_code_dal.create_promo_code(session, promo_data)
             await session.commit()
 
-            text = _("payment_successful_gift", link=f"https://t.me/VoronVPNbot?start=promo_{created_promo}", days=last_day)
+            text = _("payment_successful_gift", link=f"https://t.me/VoronVPNbot?start=promo_{created_promo.code}", days=last_day)
             await self.bot.send_message(message.from_user.id, text, parse_mode="HTML")
 
             try:
