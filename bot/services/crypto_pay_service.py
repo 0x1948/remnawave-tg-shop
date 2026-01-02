@@ -185,7 +185,7 @@ class CryptoPayService:
                     created_promo = await promo_code_dal.create_promo_code(session, promo_data)
                     await session.commit()
 
-                    text = _("payment_successful_gift", link=f"https://t.me/VoronVPNbot?start=promo_{created_promo}",
+                    text = _("payment_successful_gift", link=f"https://t.me/VoronVPNbot?start=promo_{created_promo.codes}",
                              days=last_day)
                     await bot.send_message(user_id, text, parse_mode="HTML")
 

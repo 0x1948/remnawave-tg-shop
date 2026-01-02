@@ -264,7 +264,7 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
 
             text = _("payment_successful_gift", link=f"https://t.me/VoronVPNbot?start=promo_{created_promo.code}",
                      days=last_day)
-            logging.text(text)
+            logging.info(text)
             await bot.send_message(user_id, text, parse_mode="HTML")
 
             try:
