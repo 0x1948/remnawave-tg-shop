@@ -1261,8 +1261,8 @@ async def pay_stars_callback_handler(
     try:
         splited = callback.data.split(":")
         is_gift = True if len(splited) > 3 else False
-        months = splited[1]
-        stars_price = splited[2]
+        months = int(splited[1])
+        stars_price = int(splited[2])
     except (ValueError, IndexError):
         try:
             await callback.answer(get_text("error_try_again"), show_alert=True)
@@ -1281,7 +1281,8 @@ async def pay_stars_callback_handler(
         months=months,
         stars_price=stars_price,
         title=get_text("payment_description_subscription", months=months),
-        description=payment_description
+        description=payment_description,
+        is_gift=is_gift
     )
 
     if payment_db_id:
