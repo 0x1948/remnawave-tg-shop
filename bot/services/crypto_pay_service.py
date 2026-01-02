@@ -1,5 +1,8 @@
 import logging
 import json
+import random
+import string
+from datetime import date, timedelta, datetime, timezone
 from typing import Optional
 
 from aiogram import Bot
@@ -15,7 +18,7 @@ from bot.services.subscription_service import SubscriptionService
 from bot.services.referral_service import ReferralService
 from bot.keyboards.inline.user_keyboards import get_connect_and_main_keyboard
 from bot.services.notification_service import NotificationService
-from db.dal import payment_dal, user_dal
+from db.dal import payment_dal, user_dal, promo_code_dal
 from bot.utils.text_sanitizer import sanitize_display_name, username_for_display
 
 
@@ -148,6 +151,9 @@ class CryptoPayService:
         referral_service: ReferralService = app["referral_service"]
 
         async with async_session_factory() as session:
+            db_user = await user_dal.get_user_by_id(session, user_id)
+            lang = db_user.language_code if db_user and db_user.language_code else settings.DEFAULT_LANGUAGE
+            _ = lambda k, **kw: i18n.gettext(lang, k, **kw)
             try:
                 await payment_dal.update_provider_payment_and_status(
                     session,
@@ -155,6 +161,50 @@ class CryptoPayService:
                     str(invoice.invoice_id),
                     "succeeded",
                 )
+                payment = await payment_dal.get_payment_by_id(session, payment_db_id)
+
+                if payment.is_gift:
+                    today = date.today()
+                    new_month = (today.month - 1 + months) % 12 + 1
+                    new_year = today.year + (today.month - 1 + months) // 12
+                    last_day = (date(new_year + (new_month == 12), new_month % 12 + 1, 1) - timedelta(days=1)).day
+                    alphabet = string.ascii_uppercase + string.digits
+                    code = ''.join(random.choice(alphabet) for _ in range(10))
+
+                    promo_data = {
+                        "code": code,
+                        "bonus_days": last_day,
+                        "max_activations": 1,
+                        "current_activations": 0,
+                        "is_active": True,
+                        "created_by_admin_id": 0,
+                        "created_at": datetime.now(timezone.utc),
+                        "valid_until": None
+                    }
+
+                    created_promo = await promo_code_dal.create_promo_code(session, promo_data)
+                    await session.commit()
+
+                    text = _("payment_successful_gift", link=f"https://t.me/VoronVPNbot?start=promo_{created_promo}",
+                             days=last_day)
+                    await bot.send_message(user_id, text, parse_mode="HTML")
+
+                    try:
+                        notification_service = NotificationService(bot, settings, i18n)
+                        user = await user_dal.get_user_by_id(session, user_id)
+                        await notification_service.notify_payment_received(
+                            user_id=user_id,
+                            amount=float(invoice.amount),
+                            currency=invoice.asset or settings.DEFAULT_CURRENCY_SYMBOL,
+                            months=months,
+                            payment_provider="crypto_pay",
+                            username=user.username if user else None
+                        )
+                    except Exception as e:
+                        logging.error(f"Failed to send crypto_pay payment notification: {e}")
+
+                    return
+
                 activation = await subscription_service.activate_subscription(
                     session,
                     user_id,
@@ -175,11 +225,6 @@ class CryptoPayService:
                 await session.rollback()
                 logging.error(f"Failed to process CryptoPay invoice: {e}", exc_info=True)
                 return
-
-            db_user = await user_dal.get_user_by_id(session, user_id)
-            # Use DB language for user-facing messages
-            lang = db_user.language_code if db_user and db_user.language_code else settings.DEFAULT_LANGUAGE
-            _ = lambda k, **kw: i18n.gettext(lang, k, **kw)
 
             config_link = activation.get("subscription_url") or _("config_link_not_available")
             final_end = activation.get("end_date")

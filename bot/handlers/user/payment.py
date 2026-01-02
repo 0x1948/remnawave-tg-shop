@@ -1,6 +1,8 @@
 import logging
 import json
 import asyncio
+import random
+import string
 from datetime import datetime, timezone, timedelta, date
 from typing import Optional, Dict, Any
 
@@ -12,7 +14,7 @@ from sqlalchemy.orm import sessionmaker
 from yookassa.domain.notification import WebhookNotification
 from yookassa.domain.models.amount import Amount as YooKassaAmount
 
-from db.dal import payment_dal, user_dal, user_billing_dal
+from db.dal import payment_dal, user_dal, user_billing_dal, promo_code_dal
 
 from bot.services.subscription_service import SubscriptionService
 from bot.services.referral_service import ReferralService
@@ -234,6 +236,52 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
             raise Exception(
                 f"DB Error: Could not update payment record {payment_db_id}")
 
+        payment = await payment_dal.get_payment_by_id(session, payment_db_id)
+        user_lang = db_user.language_code if db_user and db_user.language_code else settings.DEFAULT_LANGUAGE
+        _ = lambda key, **kwargs: i18n.gettext(user_lang, key, **kwargs)
+
+        if payment.is_gift:
+            today = date.today()
+            new_month = (today.month - 1 + int(subscription_months_str)) % 12 + 1
+            new_year = today.year + (today.month - 1 + int(subscription_months_str)) // 12
+            last_day = (date(new_year + (new_month == 12), new_month % 12 + 1, 1) - timedelta(days=1)).day
+            alphabet = string.ascii_uppercase + string.digits
+            code = ''.join(random.choice(alphabet) for _ in range(10))
+
+            promo_data = {
+                "code": code,
+                "bonus_days": last_day,
+                "max_activations": 1,
+                "current_activations": 0,
+                "is_active": True,
+                "created_by_admin_id": 0,
+                "created_at": datetime.now(timezone.utc),
+                "valid_until": None
+            }
+
+            created_promo = await promo_code_dal.create_promo_code(session, promo_data)
+            await session.commit()
+
+            text = _("payment_successful_gift", link=f"https://t.me/VoronVPNbot?start=promo_{created_promo}",
+                     days=last_day)
+            await bot.send_message(user_id, text, parse_mode="HTML")
+
+            try:
+                notification_service = NotificationService(bot, settings, i18n)
+                user = await user_dal.get_user_by_id(session, user_id)
+                await notification_service.notify_payment_received(
+                    user_id=user_id,
+                    amount=payment_value,
+                    currency=settings.DEFAULT_CURRENCY_SYMBOL,
+                    months=int(subscription_months),
+                    payment_provider="yookassa",
+                    username=user.username if user else None
+                )
+            except Exception as e:
+                logging.error(f"Failed to send payment notification: {e}")
+
+            return
+
         activation_details = await subscription_service.activate_subscription(
             session,
             user_id,
@@ -261,8 +309,6 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
             )
 
         # Use user's DB language for all user-facing messages
-        user_lang = db_user.language_code if db_user and db_user.language_code else settings.DEFAULT_LANGUAGE
-        _ = lambda key, **kwargs: i18n.gettext(user_lang, key, **kwargs)
 
         config_link = activation_details.get("subscription_url") or _(
             "config_link_not_available"
