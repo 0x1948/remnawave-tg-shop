@@ -462,7 +462,8 @@ async def pay_yk_callback_handler(callback: types.CallbackQuery, settings: Setti
         is_gift = True if len(splited) > 3 else False
         months = int(splited[1])
         price_amount = float(splited[2])
-    except ValueError:
+    except ValueError as e:
+        logging.error(e)
         logging.error(f"Invalid pay_yk data in callback148: {callback.data}")
         try:
             await callback.answer(get_text("error_try_again"), show_alert=True)
