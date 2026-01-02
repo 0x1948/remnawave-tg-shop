@@ -23,12 +23,11 @@ from db.dal import payment_dal, user_billing_dal
 router = Router(name="user_subscription_payments_router")
 
 
-def _parse_months_and_price(payload: str):
+def _parse_months_and_price(months, price):
     try:
-        months_str, price_str = payload.split(":")
-        if months_str == "0.5":
-            return float(months_str), float(price_str)
-        return int(months_str), float(price_str)
+        if months == "0.5":
+            return float(months), float(price)
+        return int(months), float(price)
     except (ValueError, IndexError):
         return None
 
@@ -103,6 +102,7 @@ async def _initiate_yk_payment(
     back_callback: str,
     payment_method_id: Optional[str] = None,
     selected_method_internal_id: Optional[int] = None,
+    is_gift: bool = False
 ) -> bool:
     """Create payment record and initiate YooKassa payment (new card or saved card)."""
     if not callback.message:
@@ -116,6 +116,7 @@ async def _initiate_yk_payment(
         "status": "pending_yookassa",
         "description": payment_description,
         "subscription_duration_months": months,
+        "is_gift": is_gift
     }
 
     db_payment_record = None
@@ -457,7 +458,10 @@ async def pay_yk_callback_handler(callback: types.CallbackQuery, settings: Setti
         return
 
     try:
-        _, data_payload = callback.data.split(":", 1)
+        splited = callback.data.split(":")
+        is_gift = True if len(splited) > 3 else False
+        months = int(splited[1])
+        price_amount = int(splited[2])
     except ValueError:
         logging.error(f"Invalid pay_yk data in callback: {callback.data}")
         try:
@@ -466,7 +470,7 @@ async def pay_yk_callback_handler(callback: types.CallbackQuery, settings: Setti
             pass
         return
 
-    parsed = _parse_months_and_price(data_payload)
+    parsed = _parse_months_and_price(months, price_amount)
     if not parsed:
         logging.error(f"Invalid pay_yk payload structure: {callback.data}")
         try:
@@ -553,7 +557,8 @@ async def pay_yk_callback_handler(callback: types.CallbackQuery, settings: Setti
         price_rub=price_rub,
         currency_code_for_yk=currency_code_for_yk,
         save_payment_method=autopay_enabled and autopay_require_binding,
-        back_callback=f"subscribe_period:{months}"
+        back_callback=f"subscribe_period:{months}:gift" if is_gift else f"subscribe_period:{months}",
+        is_gift=is_gift
     )
     try:
         await callback.answer()
@@ -596,7 +601,7 @@ async def pay_yk_new_card_handler(callback: types.CallbackQuery, settings: Setti
             pass
         return
 
-    parsed = _parse_months_and_price(data_payload)
+    parsed = _parse_months_and_price(data_payload[1], data_payload[2])
     if not parsed:
         logging.error(f"Invalid pay_yk_new payload structure: {callback.data}")
         try:
@@ -953,10 +958,10 @@ async def pay_fk_callback_handler(
         return
 
     try:
-        _, data_payload = callback.data.split(":", 1)
-        months_str, price_str = data_payload.split(":")
-        months = int(months_str)
-        price_rub = float(price_str)
+        splited = callback.data.split(":")
+        is_gift = True if len(splited) > 3 else False
+        months = int(splited[1])
+        price_rub = int(splited[2])
     except (ValueError, IndexError):
         logging.error(f"Invalid pay_fk data in callback: {callback.data}")
         try:
@@ -977,6 +982,7 @@ async def pay_fk_callback_handler(
         "description": payment_description,
         "subscription_duration_months": months,
         "provider": "freekassa",
+        "is_gift": is_gift
     }
 
     try:
@@ -1151,10 +1157,10 @@ async def pay_crypto_callback_handler(
         return
 
     try:
-        _, data_payload = callback.data.split(":", 1)
-        months_str, price_str = data_payload.split(":")
-        months = int(months_str)
-        price_amount = float(price_str)
+        splited = callback.data.split(":")
+        is_gift = True if len(splited) > 3 else False
+        months = int(splited[1])
+        price_amount = int(splited[2])
     except (ValueError, IndexError):
         try:
             await callback.answer(get_text("error_try_again"), show_alert=True)
@@ -1171,6 +1177,7 @@ async def pay_crypto_callback_handler(
         months=months,
         amount=price_amount,
         description=payment_description,
+        is_gift=is_gift
     )
 
     end_date, total_days = calc_months_forward(months)
