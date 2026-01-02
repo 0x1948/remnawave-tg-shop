@@ -180,7 +180,7 @@ def get_trial_confirmation_keyboard(lang: str,
 
 def get_subscription_options_keyboard(subscription_options: Dict[
     int, Optional[int]], currency_symbol_val: str, lang: str,
-                                      i18n_instance, is_gift: bool = True) -> InlineKeyboardMarkup:
+                                      i18n_instance, is_gift: bool = False) -> InlineKeyboardMarkup:
     _ = lambda key, **kwargs: i18n_instance.gettext(lang, key, **kwargs)
     builder = InlineKeyboardBuilder()
     if subscription_options:
@@ -229,7 +229,7 @@ def get_payment_method_keyboard(months: int, price: float,
                                 tribute_url: Optional[str],
                                 stars_price: Optional[int],
                                 currency_symbol_val: str, lang: str,
-                                i18n_instance, settings: Settings, is_gift: bool = True) -> InlineKeyboardMarkup:
+                                i18n_instance, settings: Settings, is_gift: bool = False) -> InlineKeyboardMarkup:
     _ = lambda key, **kwargs: i18n_instance.gettext(lang, key, **kwargs)
     builder = InlineKeyboardBuilder()
     add_text = ":gift" if is_gift else ""
