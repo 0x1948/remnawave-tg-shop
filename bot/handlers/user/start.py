@@ -1043,9 +1043,8 @@ async def main_action_callback_handler(
     elif action == "apply_promo":
         await user_promo_handlers.prompt_promo_code_input(
             callback, state, i18n_data, settings, session)
-    # elif action == "gift_vpn":
-    #     await user_payouts_handlers.prompt_get_requisites_handler(
-    #         callback, state, i18n_data, settings, session)
+    elif action == "gift_vpn":
+        await user_subscription_handlers.gift_display_sub_options(callback, i18n_data, settings, session)
     elif action == "request_trial":
         await send_trial_text(callback, i18n_data, settings, session)
     elif action == "language":
