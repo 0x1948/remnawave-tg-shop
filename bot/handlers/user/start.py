@@ -1010,6 +1010,8 @@ async def main_action_callback_handler(
     from . import promo_user as user_promo_handlers
     from . import trial_handler as user_trial_handlers
 
+    await state.clear()
+
     if not callback.message:
         await callback.answer("Error: message context lost.", show_alert=True)
         return
