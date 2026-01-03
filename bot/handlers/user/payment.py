@@ -330,7 +330,7 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
                 "yookassa_auto_renewal",
                 sub_url=config_link,
                 end_date=final_end_date_for_user.strftime('%Y-%m-%d'),
-                period=days_left
+                period=max(0, days_left)
             )
             details_markup = get_connect_and_main_keyboard(
                 user_lang, i18n, settings, config_link, preserve_message=True
@@ -376,7 +376,7 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
                     details_message = _(
                         "payment_successful_full",
                         date=final_end_date_for_user,
-                        period=days_left,
+                        period=max(0, days_left),
                         sub_url=config_link
                     )
             else:
