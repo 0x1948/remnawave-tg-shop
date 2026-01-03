@@ -242,7 +242,7 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
 
         if payment.is_gift:
 
-            days_left = calc_months_forward2(months=int(subscription_months_str))
+            end, days_left = calc_months_forward2(months=int(subscription_months_str))
 
             logging.info(days_left)
 
