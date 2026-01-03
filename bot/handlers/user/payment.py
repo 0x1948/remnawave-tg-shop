@@ -246,6 +246,9 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
             today = date.today()
 
             days_left = (today - datetime.now().date()).days if today else 0
+            days_left = max(0, days_left)
+
+            logging.info(days_left)
 
             alphabet = string.ascii_uppercase + string.digits
             code = ''.join(random.choice(alphabet) for _ in range(10))
