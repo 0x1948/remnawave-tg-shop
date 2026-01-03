@@ -324,12 +324,11 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
 
         days_left = (final_end_date_for_user.date() - datetime.now().date()).days if final_end_date_for_user else 0
 
-        # For auto-renew charges, avoid re-sending config link; send concise messag
         if is_auto_renew and final_end_date_for_user:
             details_message = _(
                 "yookassa_auto_renewal",
                 sub_url=config_link,
-                end_date=final_end_date_for_user.strftime('%Y-%m-%d'),
+                end_date=final_end_date_for_user.strftime('%d0-%m-%Y %H:%M'),
                 period=max(0, days_left)
             )
             details_markup = get_connect_and_main_keyboard(
@@ -375,7 +374,7 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
                     pay_succesful = True
                     details_message = _(
                         "payment_successful_full",
-                        date=final_end_date_for_user,
+                        date=final_end_date_for_user.strftime('%d0-%m-%Y %H:%M'),
                         period=max(0, days_left),
                         sub_url=config_link
                     )
