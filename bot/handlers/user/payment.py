@@ -58,10 +58,8 @@ def add_months_2(start: date, months: int = 0, days: int = 0) -> date:
 
     return result
 
-def calc_months_forward2(started: date = None, months: int = 0, days: int = 0):
+def calc_months_forward2(months: int = 0, days: int = 0):
     start = date.today()
-    if started:
-        start = started
     end = add_months_2(start, months=months, days=days)
     days_diff = (end - start).days
     return end, days_diff
@@ -243,10 +241,8 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
         _ = lambda key, **kwargs: i18n.gettext(user_lang, key, **kwargs)
 
         if payment.is_gift:
-            today = date.today()
 
-            days_left = (today - datetime.now().date()).days if today else 0
-            days_left = max(0, days_left)
+            end, days_left = calc_months_forward2(months=int(subscription_months_str))
 
             logging.info(days_left)
 
