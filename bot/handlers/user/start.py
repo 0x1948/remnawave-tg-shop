@@ -803,16 +803,21 @@ async def start_command_handler(message: types.Message,
                 logging.info(f"Auto-applied promo code '{promo_code_to_apply}' for user {user_id}")
 
                 # Get updated subscription details
-                active = await subscription_service.get_active_subscription_details(session, user_id)
+                new_end_date = result if isinstance(result, datetime) else None
+                days_left = (new_end_date.date() - datetime.now().date()).days if new_end_date else 0
+                active = await subscription_service.get_active_subscription_details(session, user.id)
                 config_link = active.get("config_link") if active else None
                 config_link = config_link or _("config_link_not_available")
 
-                new_end_date = result if isinstance(result, datetime) else None
+                status_map = {"active": "status_active", "expired": "status_inactive", "inactive": "status_inactive"}
+                status = _(status_map.get(active.get("status_from_panel", "active").lower(), "status_inactive"))
 
                 promo_success_text = _(
-                    "promo_code_applied_success_full",
-                    end_date=(new_end_date.strftime("%d.%m.%Y %H:%M:%S") if new_end_date else "N/A"),
-                    config_link=config_link,
+                    "my_subscription_details_ex",
+                    status=status,
+                    end_date=(new_end_date.strftime("%d-%m-%Y %H:%M") if new_end_date else "N/A"),
+                    days_left=f"{max(0, days_left)} дней",
+                    sub_url=config_link or _("config_link_not_available")
                 )
 
                 from bot.keyboards.inline.user_keyboards import get_connect_and_main_keyboard
