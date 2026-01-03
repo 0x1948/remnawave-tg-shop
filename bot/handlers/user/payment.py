@@ -244,18 +244,15 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
 
         if payment.is_gift:
             today = date.today()
-            new_month = (today.month - 1 + int(subscription_months_str)) % 12 + 1
-            new_year = today.year + (today.month - 1 + int(subscription_months_str)) // 12
-            last_day = (date(new_year + (new_month == 12), new_month % 12 + 1, 1) - timedelta(days=1)).day
 
-            logging.info(new_month, new_year, last_day)
+            days_left = (today - datetime.now().date()).days if today else 0
 
             alphabet = string.ascii_uppercase + string.digits
             code = ''.join(random.choice(alphabet) for _ in range(10))
 
             promo_data = {
                 "code": code,
-                "bonus_days": last_day,
+                "bonus_days": days_left,
                 "max_activations": 1,
                 "current_activations": 0,
                 "is_active": True,
@@ -269,8 +266,7 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
             created_promo = await promo_code_dal.create_promo_code(session, promo_data)
             await session.commit()
 
-            text = _("payment_successful_gift", link=f"https://t.me/VoronVPNbot?start=promo_{created_promo.code}",
-                     days=last_day)
+            text = _("payment_successful_gift", link=f"https://t.me/VoronVPNbot?start=promo_{created_promo.code}", days=days_left)
             logging.info(text)
             await bot.send_message(user_id, text, parse_mode="HTML")
 
