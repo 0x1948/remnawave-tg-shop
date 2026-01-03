@@ -58,8 +58,10 @@ def add_months_2(start: date, months: int = 0, days: int = 0) -> date:
 
     return result
 
-def calc_months_forward2(months: int = 0, days: int = 0):
+def calc_months_forward2(started: date = None, months: int = 0, days: int = 0):
     start = date.today()
+    if started:
+        start = started
     end = add_months_2(start, months=months, days=days)
     days_diff = (end - start).days
     return end, days_diff
@@ -320,7 +322,7 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
             "config_link_not_available"
         )
 
-        end_date, total_days = calc_months_forward2(int(subscription_months))
+        days_left = (final_end_date_for_user.date() - datetime.now().date()).days if final_end_date_for_user else 0
 
         # For auto-renew charges, avoid re-sending config link; send concise messag
         if is_auto_renew and final_end_date_for_user:
@@ -328,7 +330,7 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
                 "yookassa_auto_renewal",
                 sub_url=config_link,
                 end_date=final_end_date_for_user.strftime('%Y-%m-%d'),
-                period=total_days
+                period=days_left
             )
             details_markup = get_connect_and_main_keyboard(
                 user_lang, i18n, settings, config_link, preserve_message=True
@@ -373,8 +375,8 @@ async def process_successful_payment(session: AsyncSession, bot: Bot,
                     pay_succesful = True
                     details_message = _(
                         "payment_successful_full",
-                        date=end_date,
-                        period=total_days,
+                        date=final_end_date_for_user,
+                        period=days_left,
                         sub_url=config_link
                     )
             else:
