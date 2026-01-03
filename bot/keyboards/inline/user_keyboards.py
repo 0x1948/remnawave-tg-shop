@@ -413,6 +413,22 @@ def get_subscribe_only_markup(lang: str, i18n_instance) -> InlineKeyboardMarkup:
     builder.adjust(1)
     return builder.as_markup()
 
+def get_connect_help_url(lang: str, i18n_instance, settings: Settings) -> InlineKeyboardMarkup:
+    _ = lambda key, **kwargs: i18n_instance.gettext(lang, key, **kwargs)
+    builder = InlineKeyboardBuilder()
+    if settings.SUBSCRIPTION_MINI_APP_URL:
+        builder.button(
+            InlineKeyboardButton(
+                text=_("connect_button"),
+                web_app=WebAppInfo(url=settings.SUBSCRIPTION_MINI_APP_URL),
+            )
+        )
+    builder.button(
+        text=_(key="button_help_text"),
+        url="main_action:own"
+    )
+    builder.adjust(1)
+    return builder.as_markup()
 
 def get_user_banned_keyboard(support_link: Optional[str], lang: str,
                              i18n_instance) -> Optional[InlineKeyboardMarkup]:

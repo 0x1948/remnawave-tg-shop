@@ -10,7 +10,7 @@ from typing import Optional
 from config.settings import Settings
 from .panel_api_service import PanelApiService
 from bot.middlewares.i18n import JsonI18n
-from bot.keyboards.inline.user_keyboards import get_subscribe_only_markup, get_autorenew_cancel_keyboard
+from bot.keyboards.inline.user_keyboards import get_subscribe_only_markup, get_autorenew_cancel_keyboard, get_connect_help_url
 from db.dal import user_dal
 from bot.utils.date_utils import add_months
 
@@ -325,6 +325,14 @@ class PanelWebhookService:
                 reply_markup=markup,
                 user_name=first_name,
                 end_date=user_payload.get("expireAt", "")[:10],
+            )
+        elif event_name == "user.not_connected":
+            await self._send_message(
+                user_id,
+                lang,
+                "hour_not_connected",
+                reply_markup=get_connect_help_url(lang, self.i18n, self.settings.SUPPORT_LINK),
+                photo_id=self.settings.PHOTO_ID_CONNECT_VPN
             )
 
     async def handle_webhook(self, raw_body: bytes, signature_header: Optional[str]) -> web.Response:
