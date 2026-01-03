@@ -821,11 +821,21 @@ async def start_command_handler(message: types.Message,
                 )
 
                 from bot.keyboards.inline.user_keyboards import get_connect_and_main_keyboard
-                await message.answer(
-                    promo_success_text,
-                    reply_markup=get_connect_and_main_keyboard(current_lang, i18n, settings, config_link),
-                    parse_mode="HTML", disable_web_page_preview=True
-                )
+                reply_mark = get_connect_and_main_keyboard(current_lang, i18n, settings, config_link)
+
+                if settings.PHOTO_ID_YOUR_PROF:
+                    await message.answer_photo(
+                        photo=settings.PHOTO_ID_YOUR_PROF,
+                        caption=promo_success_text,
+                        reply_markup=reply_mark,
+                        parse_mode="HTML", disable_web_page_preview=True
+                    )
+                else:
+                    await message.answer(
+                        promo_success_text,
+                        reply_markup=reply_mark,
+                        parse_mode="HTML", disable_web_page_preview=True
+                    )
 
                 # Don't show main menu if promo was successfully applied
                 return
