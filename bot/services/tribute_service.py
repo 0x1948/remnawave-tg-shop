@@ -196,7 +196,7 @@ class TributeService:
                             months=months,
                             base_end_date=activation_details["end_date"].strftime('%Y-%m-%d'),
                             bonus_days=applied_ref_days,
-                            final_end_date=final_end.strftime('%Y-%m-%d'),
+                            final_end_date=final_end.strftime('%d0-%m-%Y %H:%M'),
                             inviter_name=inviter_name_display,
                             config_link=config_link,
                         )
@@ -204,7 +204,7 @@ class TributeService:
                         success_msg = _(
                             "payment_successful_full",
                             months=months,
-                            end_date=final_end.strftime('%Y-%m-%d'),
+                            end_date=final_end.strftime('%d0-%m-%Y %H:%M'),
                             config_link=config_link,
                         )
                     markup = get_connect_and_main_keyboard(

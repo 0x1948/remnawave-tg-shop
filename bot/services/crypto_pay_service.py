@@ -247,13 +247,13 @@ class CryptoPayService:
                          months=months,
                          base_end_date=activation["end_date"].strftime('%Y-%m-%d'),
                          bonus_days=applied_days,
-                         final_end_date=final_end.strftime('%Y-%m-%d'),
+                         final_end_date=final_end.strftime('%d0-%m-%Y %H:%M'),
                          inviter_name=inviter_name_display,
                          config_link=config_link)
             else:
                 text = _("payment_successful_full",
                          months=months,
-                         end_date=final_end.strftime('%Y-%m-%d'),
+                         end_date=final_end.strftime('%d0-%m-%Y %H:%M'),
                          config_link=config_link)
 
             markup = get_connect_and_main_keyboard(

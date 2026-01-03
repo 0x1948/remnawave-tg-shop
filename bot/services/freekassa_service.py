@@ -331,7 +331,7 @@ class FreeKassaService:
             if not config_link:
                 config_link = _("config_link_not_available")
             if final_end:
-                end_date_str = final_end.strftime("%Y-%m-%d")
+                end_date_str = final_end.strftime('%d0-%m-%Y %H:%M')
             else:
                 end_date_str = _("config_link_not_available")
 
