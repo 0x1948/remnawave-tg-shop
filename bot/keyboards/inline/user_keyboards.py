@@ -64,10 +64,10 @@ def get_main_menu_inline_keyboard(
 
     #####################
 
-    referral_button = InlineKeyboardButton(
-        text=_(key="menu_referral_inline"),
-        callback_data="main_action:referral")
-    builder.row(referral_button)
+    # referral_button = InlineKeyboardButton(
+    #     text=_(key="menu_referral_inline"),
+    #     callback_data="main_action:referral")
+    # builder.row(referral_button)
 
     builder.row(
         InlineKeyboardButton(
@@ -380,8 +380,8 @@ def get_create_invite_keyboard(lang: str, i18n_instance) -> InlineKeyboardMarkup
                    callback_data="referral_action:share_message")
     builder.button(text=_(key="referral_get_payout_button"),
                    callback_data="referral_action:get_payout")
-    builder.button(text=_(key="back_to_main_menu_button"),
-                   callback_data="main_action:referral")
+    # builder.button(text=_(key="back_to_main_menu_button"),
+    #                callback_data="main_action:referral")
     builder.adjust(1)
     return builder.as_markup()
 
