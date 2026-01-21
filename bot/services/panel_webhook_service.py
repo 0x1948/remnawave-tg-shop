@@ -244,8 +244,6 @@ class PanelWebhookService:
                 reply_markup=markup,
                 photo_id=self.settings.PHOTO_ID_VPN_DISABLED
             )
-            await session.commit()
-            await session.rollback()
         elif event_name == "user.expired_24_hours_ago" and self.settings.SUBSCRIPTION_NOTIFY_AFTER_EXPIRE:
             await self._send_message(
                 user_id,
