@@ -237,86 +237,13 @@ class PanelWebhookService:
                     end_date=user_payload.get("expireAt", "")[:10],
                 )
         elif event_name == "user.expired":
-            auto_renewed = False
-            yookassa_autorenew_attempted = False
-            yookassa_autorenew_failed = False
-
-            try:
-                subscription_service = getattr(self, "subscription_service", None)
-                if not subscription_service:
-                    raise RuntimeError("subscription_service missing")
-
-                async with self.async_session_factory() as session:
-                    from db.dal import subscription_dal
-                    sub = await subscription_dal.get_active_subscription_by_user_id(session, user_id)
-
-                    if not sub:
-                        if self.settings.SUBSCRIPTION_NOTIFY_ON_EXPIRE:
-                            await self._send_message(
-                                user_id,
-                                lang,
-                                "subscription_expired_notification",
-                                reply_markup=markup,
-                                user_name=first_name,
-                                end_date=user_payload.get("expireAt", "")[:10],
-                                photo_id=self.settings.PHOTO_ID_PAY_EXPIRED
-                            )
-                        return
-
-                    if sub.provider == "tribute" and sub.auto_renew_enabled:
-                        try:
-                            auto_renewed = await self._handle_expired_subscription(
-                                session, user_id, user_payload, lang, markup, first_name
-                            )
-                        except Exception:
-                            await session.rollback()
-                            logging.exception("Tribute auto-renew attempt failed")
-
-                    if sub.auto_renew_enabled and sub.provider != "tribute":
-                        yookassa_autorenew_attempted = True
-
-                        try:
-                            auto_renewed = await subscription_service.charge_subscription_renewal(session, sub)
-                            if auto_renewed:
-                                await session.commit()
-                                return  # ✓ инициировано → ничего не отправляем
-                            else:
-                                yookassa_autorenew_failed = True
-                                await session.rollback()
-
-                        except Exception:
-                            yookassa_autorenew_failed = True
-                            await session.rollback()
-                            logging.exception("YooKassa auto-renew attempt failed")
-
-            except Exception:
-                logging.exception("Auto-renew main block failed")
-
-            if yookassa_autorenew_attempted and yookassa_autorenew_failed:
-                await self.bot.send_photo(
-                    chat_id=user_id,
-                    photo=self.settings.PHOTO_ID_PAY_EXPIRED,
-                    caption=_("error_auto_renew_pay"),
-                    reply_markup=get_subscribe_only_markup(self.settings.DEFAULT_LANGUAGE, self.i18n)
-                )
-                return
-
-            if self.settings.SUBSCRIPTION_NOTIFY_ON_EXPIRE:
-                await self._send_message(
-                    user_id,
-                    lang,
-                    "subscription_expired_notification",
-                    reply_markup=markup,
-                    user_name=first_name,
-                    end_date=user_payload.get("expireAt", "")[:10],
-                    photo_id=self.settings.PHOTO_ID_PAY_EXPIRED
-                )
-
-            if auto_renewed:
-                await session.commit()
-                return
-            else:
-                await session.rollback()
+            await self._send_message(
+                user_id,
+                lang,
+                "payment_failed_vpn_dis",
+                reply_markup=markup,
+                photo_id=self.settings.PHOTO_ID_VPN_DISABLED
+            )
         elif event_name == "user.expired_24_hours_ago" and self.settings.SUBSCRIPTION_NOTIFY_AFTER_EXPIRE:
             await self._send_message(
                 user_id,

@@ -1066,7 +1066,8 @@ async def main_action_callback_handler(
         await user_subscription_handlers.display_subscription_options(
             callback, i18n_data, settings, session, is_gift=True)
     elif action == "request_trial":
-        await send_trial_text(callback, i18n_data, settings, session)
+        await user_trial_handlers.request_trial_confirmation_handler(
+            callback, settings, i18n_data, subscription_service, session)
     elif action == "language":
         await language_command_handler(callback, i18n_data, settings)
     elif action == "back_to_main":
