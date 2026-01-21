@@ -197,14 +197,10 @@ async def my_subscription_command_handler(
     status_map = {"active": "status_active", "expired": "status_inactive", "inactive": "status_inactive"}
     status = get_text(status_map.get(active.get("status_from_panel", "active").lower(), "status_inactive"))
 
-    logging.info(local_sub.auto_renew_enabled)
-    status_autopay = get_text("status_autopay_enabled") if local_sub.auto_renew_enabled == True else get_text("status_autopay_disabled")
-
     if if_its_ex == False:
         text = get_text(
             "my_subscription_details",
             ider=event.from_user.id,
-            autopay=status_autopay,
             end_date=end_date.strftime('%d-%m-%Y %H:%M') if end_date else "N/A",
             days_left=max(0, days_left),
             status=status,
@@ -299,18 +295,6 @@ async def my_subscription_command_handler(
                 InlineKeyboardButton(
                     text=devices_button_text,
                     callback_data="main_action:my_devices",
-                )
-            ])
-
-        # 2) Auto-renew toggle (if supported and not tribute)
-        if local_sub and local_sub.provider != "tribute" and getattr(settings, 'YOOKASSA_AUTOPAYMENTS_ENABLED', False):
-            toggle_text = (
-                get_text("autorenew_disable_button") if local_sub.auto_renew_enabled else get_text("autorenew_enable_button")
-            )
-            prepend_rows.append([
-                InlineKeyboardButton(
-                    text=toggle_text,
-                    callback_data=f"toggle_autorenew:{local_sub.subscription_id}:{1 if not local_sub.auto_renew_enabled else 0}",
                 )
             ])
 

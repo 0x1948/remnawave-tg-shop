@@ -1,5 +1,3 @@
-from gc import callbacks
-
 from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardButton
 from aiogram.types import InlineKeyboardMarkup, WebAppInfo
 from typing import Dict, Optional, List, Tuple
@@ -350,7 +348,7 @@ def get_yk_saved_cards_keyboard(
     builder.row(
         InlineKeyboardButton(
             text=_(key="yookassa_autopay_pay_new_card_button"),
-            callback_data=f"pay_yk_new:{months}:{price_str}",
+            callback_data=f"pay_yk:{months}:{price_str}",
         )
     )
     builder.row(
@@ -640,9 +638,6 @@ def get_back_to_payment_method_details_keyboard(pm_id: str, lang: str, i18n_inst
 def get_autorenew_cancel_keyboard(lang: str, i18n_instance) -> InlineKeyboardMarkup:
     _ = lambda key, **kwargs: i18n_instance.gettext(lang, key, **kwargs)
     builder = InlineKeyboardBuilder()
-    builder.row(
-        InlineKeyboardButton(text=_(key="autorenew_disable_button"), callback_data="autorenew:cancel")
-    )
     builder.row(
         InlineKeyboardButton(text=_(key="menu_my_subscription_inline"), callback_data="main_action:my_subscription")
     )
