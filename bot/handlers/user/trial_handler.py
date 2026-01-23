@@ -1,5 +1,6 @@
 import logging
 from aiogram import Router, F, types, Bot
+from aiogram.types import InputMediaPhoto
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime
@@ -14,6 +15,7 @@ from bot.keyboards.inline.user_keyboards import (
     get_trial_confirmation_keyboard,
     get_main_menu_inline_keyboard,
     get_connect_and_main_keyboard,
+    get_subscribe_only_markup
 )
 from bot.middlewares.i18n import JsonI18n
 from .start import send_main_menu
@@ -78,6 +80,7 @@ async def request_trial_confirmation_handler(
     )
 
     final_message_text_in_chat = ""
+    photo_id = None
     show_trial_button_after_action = False
     config_link_for_trial = None
 
@@ -102,16 +105,10 @@ async def request_trial_confirmation_handler(
         )
 
         final_message_text_in_chat = _(
-            "trial_activated_details_message",
-            days=activation_result.get("days", settings.TRIAL_DURATION_DAYS),
-            end_date=(
-                end_date_obj.strftime("%Y-%m-%d")
-                if isinstance(end_date_obj, datetime)
-                else "N/A"
-            ),
-            config_link=config_link_for_trial,
-            traffic_gb=traffic_display,
+            "payment_trial_successful",
+            sub_link=config_link_for_trial
         )
+        photo_id = settings.PHOTO_ID_EXPIRED_24_HOURS
         
         # Send notification to admin about new trial
         notification_service = NotificationService(callback.bot, settings, i18n)
@@ -154,12 +151,20 @@ async def request_trial_confirmation_handler(
     )
 
     try:
-        await callback.message.edit_text(
-            final_message_text_in_chat,
-            parse_mode="HTML",
-            reply_markup=reply_markup,
-            disable_web_page_preview=True,
-        )
+        if photo_id:
+            await callback.message.edit_media(
+                media=InputMediaPhoto(media=photo_id, caption=final_message_text_in_chat),
+                reply_markup=get_subscribe_only_markup(
+                    settings.DEFAULT_LANGUAGE, i18n
+                ),
+            )
+        else:
+            await callback.message.edit_text(
+                final_message_text_in_chat,
+                parse_mode="HTML",
+                reply_markup=reply_markup,
+                disable_web_page_preview=True
+            )
     except Exception as e_edit:
         logging.warning(
             f"Could not edit trial result message: {e_edit}. Sending new one."
@@ -224,6 +229,7 @@ async def confirm_activate_trial_handler(
     )
 
     final_message_text_in_chat = ""
+    photo_id = None
     show_trial_button_after_action = False
     config_link_for_trial = None
 
@@ -248,16 +254,10 @@ async def confirm_activate_trial_handler(
         )
 
         final_message_text_in_chat = _(
-            "trial_activated_details_message",
-            days=activation_result.get("days", settings.TRIAL_DURATION_DAYS),
-            end_date=(
-                end_date_obj.strftime("%Y-%m-%d")
-                if isinstance(end_date_obj, datetime)
-                else "N/A"
-            ),
-            config_link=config_link_for_trial,
-            traffic_gb=traffic_display,
+            "payment_trial_successful",
+            sub_link=config_link_for_trial
         )
+        photo_id = settings.PHOTO_ID_EXPIRED_24_HOURS
     else:
         message_key_from_service = (
             activation_result.get("message_key", "trial_activation_failed")
@@ -288,12 +288,20 @@ async def confirm_activate_trial_handler(
     )
 
     try:
-        await callback.message.edit_text(
-            final_message_text_in_chat,
-            parse_mode="HTML",
-            reply_markup=reply_markup,
-            disable_web_page_preview=True,
-        )
+        if photo_id:
+            await callback.message.edit_media(
+                media=InputMediaPhoto(media=photo_id, caption=final_message_text_in_chat),
+                reply_markup=get_subscribe_only_markup(
+                    settings.DEFAULT_LANGUAGE, i18n
+                ),
+            )
+        else:
+            await callback.message.edit_text(
+                final_message_text_in_chat,
+                parse_mode="HTML",
+                reply_markup=reply_markup,
+                disable_web_page_preview=True
+            )
     except Exception as e_edit:
         logging.warning(
             f"Could not edit trial result message: {e_edit}. Sending new one."

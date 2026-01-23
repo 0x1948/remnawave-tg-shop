@@ -46,7 +46,7 @@ async def process_subscription_autorenew(session, sub, bot) -> bool:
             caption=_("payment_failed_vpn_dis"),
             reply_markup=get_subscribe_only_markup(
                 settings.DEFAULT_LANGUAGE, i18n
-            ),
+            )
         )
         return True
 

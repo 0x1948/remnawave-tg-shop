@@ -621,6 +621,8 @@ async def pay_yk_new_card_handler(callback: types.CallbackQuery, settings: Setti
         return
 
     months, price_rub = parsed
+    if float(months) == 0.5:
+        await callback.answer("No work.", show_alert=True)
     user_id = callback.from_user.id
     currency_code_for_yk = "RUB"
     autopay_enabled = bool(getattr(settings, 'YOOKASSA_AUTOPAYMENTS_ENABLED', False))
