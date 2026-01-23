@@ -106,7 +106,7 @@ async def request_trial_confirmation_handler(
 
         final_message_text_in_chat = _(
             "payment_trial_successful",
-            sub_link=config_link_for_trial
+            sub_url=config_link_for_trial
         )
         photo_id = settings.PHOTO_ID_EXPIRED_24_HOURS
         
@@ -255,7 +255,7 @@ async def confirm_activate_trial_handler(
 
         final_message_text_in_chat = _(
             "payment_trial_successful",
-            sub_link=config_link_for_trial
+            sub_url=config_link_for_trial
         )
         photo_id = settings.PHOTO_ID_EXPIRED_24_HOURS
     else:
