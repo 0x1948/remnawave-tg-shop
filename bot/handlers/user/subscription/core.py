@@ -13,12 +13,14 @@ from bot.keyboards.inline.user_keyboards import (
     get_back_to_main_menu_markup,
     get_autorenew_confirm_keyboard,
     get_subscribe_ex_kb,
-    get_gift_vpn_kb
+    get_gift_vpn_kb,
+    get_channel_subscription_keyboard
 )
 from bot.services.subscription_service import SubscriptionService
 from bot.services.panel_api_service import PanelApiService
+from bot.handlers.user.start import ensure_required_channel_subscription
 from bot.middlewares.i18n import JsonI18n
-from db.dal import subscription_dal, user_billing_dal
+from db.dal import subscription_dal, user_billing_dal, user_dal
 from db.models import Subscription
 
 router = Router(name="user_subscription_core_router")
@@ -43,6 +45,28 @@ async def display_subscription_options(event: Union[types.Message, types.Callbac
 
     currency_symbol_val = settings.DEFAULT_CURRENCY_SYMBOL
     text_content = get_text("select_subscription_period") if settings.subscription_options else get_text("no_subscription_options_available")
+
+    db_user = await user_dal.get_user_by_id(session, event.from_user.id)
+
+    verified = await ensure_required_channel_subscription(
+        event, settings, i18n, current_lang, session, db_user)
+
+    if not verified:
+        if isinstance(event, types.CallbackQuery):
+            await event.message.edit_media(
+                media=InputMediaPhoto(media=settings.PHOTO_ID_MAIN_MENU, caption=get_text(key="text_subscribe_op")),
+                reply_markup=get_channel_subscription_keyboard(
+                    current_lang, i18n, settings.REQUIRED_CHANNEL_LINK
+                )
+            )
+        elif isinstance(event, types.Message):
+            await event.edit_media(
+                media=InputMediaPhoto(media=settings.PHOTO_ID_MAIN_MENU, caption=get_text(key="text_subscribe_op")),
+                reply_markup=get_channel_subscription_keyboard(
+                    current_lang, i18n, settings.REQUIRED_CHANNEL_LINK
+                )
+            )
+        return
 
     if is_gift:
         text_content = get_text("select_subscription_period_gift")
@@ -82,6 +106,7 @@ async def gift_display_sub_options(event: Union[types.Message, types.CallbackQue
     i18n: Optional[JsonI18n] = i18n_data.get("i18n_instance")
 
     get_text = lambda key, **kwargs: i18n.gettext(current_lang, key, **kwargs) if i18n else key
+    db_user = await user_dal.get_user_by_id(session, event.from_user.id)
 
     if not i18n:
         err_msg = "Language service error."
@@ -92,6 +117,26 @@ async def gift_display_sub_options(event: Union[types.Message, types.CallbackQue
                 pass
         elif isinstance(event, types.Message):
             await event.answer(err_msg)
+        return
+
+    verified = await ensure_required_channel_subscription(
+        event, settings, i18n, current_lang, session, db_user)
+
+    if not verified:
+        if isinstance(event, types.CallbackQuery):
+            await event.message.edit_media(
+                media=InputMediaPhoto(media=settings.PHOTO_ID_MAIN_MENU, caption=get_text(key="text_subscribe_op")),
+                reply_markup=get_channel_subscription_keyboard(
+                    current_lang, i18n, settings.REQUIRED_CHANNEL_LINK
+                )
+            )
+        elif isinstance(event, types.Message):
+            await event.message.edit_media(
+                media=InputMediaPhoto(media=settings.PHOTO_ID_MAIN_MENU, caption=get_text(key="text_subscribe_op")),
+                reply_markup=get_channel_subscription_keyboard(
+                    current_lang, i18n, settings.REQUIRED_CHANNEL_LINK
+                )
+            )
         return
 
     text_content = get_text("menu_gift_vpn_text")
@@ -151,6 +196,28 @@ async def my_subscription_command_handler(
 
     if not panel_service or not subscription_service:
         await target.answer(get_text("error_service_unavailable"))
+        return
+
+    db_user = await user_dal.get_user_by_id(session, event.from_user.id)
+
+    verified = await ensure_required_channel_subscription(
+        event, settings, i18n, current_lang, session, db_user)
+
+    if not verified:
+        if isinstance(event, types.CallbackQuery):
+            await event.message.edit_media(
+                media=InputMediaPhoto(media=settings.PHOTO_ID_MAIN_MENU, caption=get_text(key="text_subscribe_op")),
+                reply_markup=get_channel_subscription_keyboard(
+                    current_lang, i18n, settings.REQUIRED_CHANNEL_LINK
+                )
+            )
+        elif isinstance(event, types.Message):
+            await event.edit_media(
+                media=InputMediaPhoto(media=settings.PHOTO_ID_MAIN_MENU, caption=get_text(key="text_subscribe_op")),
+                reply_markup=get_channel_subscription_keyboard(
+                    current_lang, i18n, settings.REQUIRED_CHANNEL_LINK
+                )
+            )
         return
 
     active = await subscription_service.get_active_subscription_details(session, event.from_user.id)

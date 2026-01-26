@@ -453,20 +453,20 @@ async def ensure_required_channel_subscription(
             await event.answer(error_text)
         return False
 
-    update_payload = {
-        "channel_subscription_checked_at": now,
-        "channel_subscription_verified_for": required_channel_id,
-        "channel_subscription_verified": is_member,
-    }
-    try:
-        await user_dal.update_user(session, user_id, update_payload)
-    except Exception as update_error:
-        logging.error(
-            "Failed to persist channel verification result for user %s: %s",
-            user_id,
-            update_error,
-            exc_info=True,
-        )
+    # update_payload = {
+    #     "channel_subscription_checked_at": now,
+    #     "channel_subscription_verified_for": required_channel_id,
+    #     "channel_subscription_verified": is_member,
+    # }
+    # try:
+    #     await user_dal.update_user(session, user_id, update_payload)
+    # except Exception as update_error:
+    #     logging.error(
+    #         "Failed to persist channel verification result for user %s: %s",
+    #         user_id,
+    #         update_error,
+    #         exc_info=True,
+    #     )
 
     if is_member:
         logging.info(
@@ -856,7 +856,7 @@ async def start_command_handler(message: types.Message,
                          is_edit=False)
 
 
-@router.callback_query(F.data == "channel_subscription:verify")
+@router.callback_query(F.data.startswith("channel_subscription:verify"))
 async def verify_channel_subscription_callback(
         callback: types.CallbackQuery,
         settings: Settings,
@@ -897,12 +897,7 @@ async def verify_channel_subscription_callback(
                                                 welcome_text)
 
     if verified:
-        bonus_days = 4
-        new_end_date = await subscription_service.extend_active_subscription_days(
-            session=session,
-            user_id=callback.from_user.id,
-            bonus_days=bonus_days,
-            reason=f"subscribe to channel")
+        await send_own_menu(callback, i18n_data, settings, session)
 
         try:
             await callback.answer(_(key="channel_subscription_verified_success"),
@@ -910,7 +905,7 @@ async def verify_channel_subscription_callback(
         except Exception:
             pass
 
-        await send_own_menu(callback, i18n_data, settings, session)
+
 
 @router.message(Command("language"))
 @router.callback_query(F.data == "main_action:language")

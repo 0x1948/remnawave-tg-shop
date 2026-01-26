@@ -78,13 +78,13 @@ def get_main_menu_inline_keyboard(
 
     rw_row = []
 
-    if not (db_user.channel_subscription_verified and db_user.channel_subscription_verified_for == settings.REQUIRED_CHANNEL_ID):
-        rw_row.append(
-            InlineKeyboardButton(
-                text=_(key="menu_get_bonus"),
-                callback_data="main_action:get_bonus"
-            )
-        )
+    # if not (db_user.channel_subscription_verified and db_user.channel_subscription_verified_for == settings.REQUIRED_CHANNEL_ID):
+    #     rw_row.append(
+    #         InlineKeyboardButton(
+    #             text=_(key="menu_get_bonus"),
+    #             callback_data="main_action:get_bonus"
+    #         )
+    #     )
     rw_row.append(
         InlineKeyboardButton(
             text=_(key="menu_apply_promo_button"),
