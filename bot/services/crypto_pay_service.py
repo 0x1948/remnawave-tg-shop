@@ -161,7 +161,7 @@ class CryptoPayService:
                     str(invoice.invoice_id),
                     "succeeded",
                 )
-                payment = await payment_dal.get_payment_by_id(session, payment_db_id)
+                payment = await payment_dal.get_payment_by_db_id(session, payment_db_id)
 
                 if payment.is_gift:
                     today = date.today()
