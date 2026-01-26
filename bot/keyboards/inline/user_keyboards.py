@@ -203,7 +203,7 @@ def get_subscription_options_keyboard(subscription_options: Dict[
     else:
         builder.row(
             InlineKeyboardButton(text=_(key="back_to_main_menu_button"),
-                                 callback_data="main_action:own"))
+                                 callback_data="main_action:back_to_start"))
     return builder.as_markup()
 
 def get_gift_vpn_kb(lang: str, i18n_instance) -> InlineKeyboardMarkup:
@@ -218,7 +218,7 @@ def get_gift_vpn_kb(lang: str, i18n_instance) -> InlineKeyboardMarkup:
 
     builder.row(
         InlineKeyboardButton(text=_(key="back_to_main_menu_button"),
-                             callback_data="main_action:back_to_start"))
+                             callback_data="main_action:own"))
     builder.adjust(1)
     return builder.as_markup()
 
