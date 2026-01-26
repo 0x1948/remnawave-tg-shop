@@ -228,7 +228,9 @@ class CryptoPayService:
 
             config_link = activation.get("subscription_url") or _("config_link_not_available")
             final_end = activation.get("end_date")
+            days_left = (final_end.date() - datetime.now().date()).days if final_end else 0
             applied_days = 0
+            pay_succesful = False
             if referral_bonus and referral_bonus.get("referee_new_end_date"):
                 final_end = referral_bonus["referee_new_end_date"]
                 applied_days = referral_bonus.get("referee_bonus_applied_days", 0)
@@ -251,22 +253,34 @@ class CryptoPayService:
                          inviter_name=inviter_name_display,
                          config_link=config_link)
             else:
-                text = _("payment_successful_full",
-                         months=months,
-                         end_date=final_end.strftime('%d0-%m-%Y %H:%M'),
-                         config_link=config_link)
+                pay_succesful = True
+                text = _(
+                    "payment_successful_full",
+                    date=final_end.strftime('%d0-%m-%Y %H:%M'),
+                    period=max(0, days_left),
+                    sub_url=config_link
+                )
 
             markup = get_connect_and_main_keyboard(
                 lang, i18n, settings, config_link, preserve_message=True
             )
             try:
-                await bot.send_message(
-                    user_id,
-                    text,
-                    reply_markup=markup,
-                    parse_mode="HTML",
-                    disable_web_page_preview=True,
-                )
+                if pay_succesful and settings.PHOTO_ID_YOUR_PROF:
+                        await bot.send_photo(
+                            user_id,
+                            photo=settings.PHOTO_ID_YOUR_PROF,
+                            caption=text,
+                            reply_markup=markup,
+                            parse_mode="HTML"
+                        )
+                else:
+                    await bot.send_message(
+                        user_id,
+                        text,
+                        reply_markup=markup,
+                        parse_mode="HTML",
+                        disable_web_page_preview=True,
+                    )
             except Exception as e:
                 logging.error(f"Failed to send CryptoPay success message: {e}")
 
