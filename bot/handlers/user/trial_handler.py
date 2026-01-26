@@ -15,10 +15,11 @@ from bot.keyboards.inline.user_keyboards import (
     get_trial_confirmation_keyboard,
     get_main_menu_inline_keyboard,
     get_connect_and_main_keyboard,
-    get_subscribe_only_markup
+    get_subscribe_only_markup,
+    get_channel_subscription_keyboard
 )
 from bot.middlewares.i18n import JsonI18n
-from .start import send_main_menu
+from .start import send_main_menu, ensure_required_channel_subscription
 
 router = Router(name="user_trial_router")
 
@@ -41,6 +42,18 @@ async def request_trial_confirmation_handler(
             await callback.answer(_("error_occurred_try_again"), show_alert=True)
         except Exception:
             pass
+        return
+
+    verified = await ensure_required_channel_subscription(
+        callback, settings, i18n, current_lang, session, db_user)
+
+    if not verified:
+        await callback.message.edit_media(
+            media=InputMediaPhoto(media=settings.PHOTO_ID_MAIN_MENU, caption=_(key="text_subscribe_op")),
+            reply_markup=get_channel_subscription_keyboard(
+                current_lang, i18n, settings.REQUIRED_CHANNEL_LINK
+            )
+        )
         return
 
     show_trial_btn_in_menu_if_fail = False
