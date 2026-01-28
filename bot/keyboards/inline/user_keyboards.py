@@ -1,3 +1,5 @@
+import logging
+
 from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardButton
 from aiogram.types import InlineKeyboardMarkup, WebAppInfo
 from typing import Dict, Optional, List, Tuple
@@ -231,6 +233,7 @@ def get_payment_method_keyboard(months: int, price: float,
     _ = lambda key, **kwargs: i18n_instance.gettext(lang, key, **kwargs)
     builder = InlineKeyboardBuilder()
     add_text = ":gift" if is_gift else ""
+    logging.info(add_text)
     if settings.FREEKASSA_ENABLED:
         builder.button(text=_("pay_with_sbp_button"),
                        callback_data=f"pay_fk:{months}:{price}{add_text}")
