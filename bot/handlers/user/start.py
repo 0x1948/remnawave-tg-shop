@@ -897,7 +897,7 @@ async def verify_channel_subscription_callback(
                                                 welcome_text)
 
     if verified:
-        await send_main_menu(callback, settings, i18n_data, subscription_service, session)
+        await send_main_menu(callback, settings, i18n_data, subscription_service, session, is_edit=True)
 
         try:
             await callback.answer(_(key="channel_subscription_verified_success"),
