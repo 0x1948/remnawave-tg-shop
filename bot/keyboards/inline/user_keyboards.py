@@ -457,7 +457,8 @@ def get_channel_subscription_keyboard(
         lang: str,
         i18n_instance,
         channel_link: Optional[str],
-        include_check_button: bool = True) -> Optional[InlineKeyboardMarkup]:
+        include_check_button: bool = True,
+        callback_data: str = None) -> Optional[InlineKeyboardMarkup]:
     """
     Return keyboard with buttons to open the required channel and trigger a subscription re-check.
     """
@@ -466,6 +467,8 @@ def get_channel_subscription_keyboard(
 
     _ = lambda key, **kwargs: i18n_instance.gettext(lang, key, **kwargs)
     builder = InlineKeyboardBuilder()
+
+    data_callback = callback_data if callback_data else "back_to_start"
 
     has_buttons = False
 
@@ -485,7 +488,7 @@ def get_channel_subscription_keyboard(
 
     builder.button(
         text=_("back_to_main_menu_button"),
-        callback_data="main_action:back_to_main"
+        callback_data=f"main_action:{data_callback}"
     )
 
     if not has_buttons:

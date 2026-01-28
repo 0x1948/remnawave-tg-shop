@@ -1,7 +1,7 @@
 {
   "welcome": "Добро пожаловать, !",
   "channel_subscription_required": "Чтобы пользоваться ботом, подпишитесь на канал и нажмите \"Проверить подписку\".",
-  "channel_subscription_join_button": "Перейти в канал",
+  "channel_subscription_join_button": "Подписаться",
   "channel_subscription_verify_button": "Проверить подписку",
   "channel_subscription_check_failed": "Не удалось проверить подписку. Попробуйте позже или обратитесь в поддержку.",
   "channel_subscription_verified_success": "Спасибо.",
