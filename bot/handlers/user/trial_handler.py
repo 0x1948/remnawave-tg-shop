@@ -48,9 +48,8 @@ async def request_trial_confirmation_handler(
         callback, settings, i18n, current_lang, session, db_user)
 
     if not verified:
-        await callback.message.answer_photo(
-            photo=settings.PHOTO_ID_MAIN_MENU,
-            caption=_(key="text_subscribe_op"),
+        await callback.message.answer(
+            _(key="text_subscribe_op"),
             reply_markup=get_channel_subscription_keyboard(
                 current_lang, i18n, settings.REQUIRED_CHANNEL_LINK,
             )

@@ -53,18 +53,16 @@ async def display_subscription_options(event: Union[types.Message, types.Callbac
 
     if not verified:
         if isinstance(event, types.CallbackQuery):
-            await event.message.answer_photo(
-                photo=settings.PHOTO_ID_MAIN_MENU,
-                caption=get_text(key="text_subscribe_op"),
+            await event.message.answer(
+                get_text(key="text_subscribe_op"),
                 reply_markup=get_channel_subscription_keyboard(
                     current_lang, i18n, settings.REQUIRED_CHANNEL_LINK,
                 )
             )
             await event.message.delete()
         elif isinstance(event, types.Message):
-            await event.answer_photo(
-                photo=settings.PHOTO_ID_MAIN_MENU,
-                caption=get_text(key="text_subscribe_op"),
+            await event.answer(
+                get_text(key="text_subscribe_op"),
                 reply_markup=get_channel_subscription_keyboard(
                     current_lang, i18n, settings.REQUIRED_CHANNEL_LINK,
                 )
@@ -128,18 +126,16 @@ async def gift_display_sub_options(event: Union[types.Message, types.CallbackQue
 
     if not verified:
         if isinstance(event, types.CallbackQuery):
-            await event.message.answer_photo(
-                photo=settings.PHOTO_ID_MAIN_MENU,
-                caption=get_text(key="text_subscribe_op"),
+            await event.message.answer(
+                get_text(key="text_subscribe_op"),
                 reply_markup=get_channel_subscription_keyboard(
                     current_lang, i18n, settings.REQUIRED_CHANNEL_LINK,
                 )
             )
             await event.message.delete()
         elif isinstance(event, types.Message):
-            await event.answer_photo(
-                photo=settings.PHOTO_ID_MAIN_MENU,
-                caption=get_text(key="text_subscribe_op"),
+            await event.answer(
+                get_text(key="text_subscribe_op"),
                 reply_markup=get_channel_subscription_keyboard(
                     current_lang, i18n, settings.REQUIRED_CHANNEL_LINK,
                 )
@@ -213,18 +209,16 @@ async def my_subscription_command_handler(
 
     if not verified:
         if isinstance(event, types.CallbackQuery):
-            await event.message.answer_photo(
-                photo=settings.PHOTO_ID_MAIN_MENU,
-                caption=get_text(key="text_subscribe_op"),
+            await event.message.answer(
+                get_text(key="text_subscribe_op"),
                 reply_markup=get_channel_subscription_keyboard(
                     current_lang, i18n, settings.REQUIRED_CHANNEL_LINK,
                 )
             )
             await event.message.delete()
         elif isinstance(event, types.Message):
-            await event.answer_photo(
-                photo=settings.PHOTO_ID_MAIN_MENU,
-                caption=get_text(key="text_subscribe_op"),
+            await event.answer(
+                get_text(key="text_subscribe_op"),
                 reply_markup=get_channel_subscription_keyboard(
                     current_lang, i18n, settings.REQUIRED_CHANNEL_LINK,
                 )
