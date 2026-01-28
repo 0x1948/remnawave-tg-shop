@@ -233,7 +233,7 @@ def get_payment_method_keyboard(months: int, price: float,
     _ = lambda key, **kwargs: i18n_instance.gettext(lang, key, **kwargs)
     builder = InlineKeyboardBuilder()
     add_text = ":gift" if is_gift else ""
-    logging.info(add_text)
+    sub_text = ":gift" if is_gift else ":subscribe"
     if settings.FREEKASSA_ENABLED:
         builder.button(text=_("pay_with_sbp_button"),
                        callback_data=f"pay_fk:{months}:{price}{add_text}")
@@ -249,7 +249,7 @@ def get_payment_method_keyboard(months: int, price: float,
         builder.button(text=_("pay_with_cryptopay_button"),
                        callback_data=f"pay_crypto:{months}:{price}{add_text}")
     builder.button(text=_(key="cancel_button"),
-                   callback_data="main_action:gift")
+                   callback_data=f"main_action{sub_text}")
     builder.adjust(1)
     return builder.as_markup()
 
