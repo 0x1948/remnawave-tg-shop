@@ -504,7 +504,7 @@ def get_connect_and_main_keyboard(
         i18n_instance,
         settings: Settings,
         config_link: Optional[str],
-        preserve_message: bool = False) -> InlineKeyboardMarkup:
+            preserve_message: bool = False) -> InlineKeyboardMarkup:
     """Keyboard with a connect button and a back to main menu button."""
     _ = lambda key, **kwargs: i18n_instance.gettext(lang, key, **kwargs)
     builder = InlineKeyboardBuilder()

@@ -53,8 +53,8 @@ async def display_subscription_options(event: Union[types.Message, types.Callbac
 
     if not verified:
         if isinstance(event, types.CallbackQuery):
-            await event.message.edit_text(
-                get_text(key="text_subscribe_op"),
+            await event.message.edit_media(
+                media=InputMediaPhoto(media=settings.PHOTO_ID_MAIN_MENU, caption=get_text(key="text_subscribe_op")),
                 reply_markup=get_channel_subscription_keyboard(
                     current_lang, i18n, settings.REQUIRED_CHANNEL_LINK,
                 )
