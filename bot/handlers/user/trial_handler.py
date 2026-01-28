@@ -48,12 +48,14 @@ async def request_trial_confirmation_handler(
         callback, settings, i18n, current_lang, session, db_user)
 
     if not verified:
-        await callback.message.edit_media(
-            media=InputMediaPhoto(media=settings.PHOTO_ID_MAIN_MENU, caption=_(key="text_subscribe_op")),
+        await callback.message.answer_photo(
+            photo=settings.PHOTO_ID_MAIN_MENU,
+            caption=_(key="text_subscribe_op"),
             reply_markup=get_channel_subscription_keyboard(
-                current_lang, i18n, settings.REQUIRED_CHANNEL_LINK
+                current_lang, i18n, settings.REQUIRED_CHANNEL_LINK,
             )
         )
+        await callback.message.delete()
         return
 
     show_trial_btn_in_menu_if_fail = False
@@ -158,9 +160,7 @@ async def request_trial_confirmation_handler(
         if photo_id:
             await callback.message.edit_media(
                 media=InputMediaPhoto(media=photo_id, caption=final_message_text_in_chat),
-                reply_markup=get_subscribe_only_markup(
-                    settings.DEFAULT_LANGUAGE, i18n
-                ),
+                reply_markup=reply_markup
             )
         else:
             await callback.message.edit_text(
