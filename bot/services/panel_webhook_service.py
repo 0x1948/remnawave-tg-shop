@@ -258,7 +258,7 @@ class PanelWebhookService:
                 user_id,
                 lang,
                 "hour_not_connected",
-                reply_markup=get_connect_help_url(lang, self.i18n, self.settings.SUPPORT_LINK),
+                reply_markup=get_connect_help_url(lang, self.i18n, self.settings),
                 photo_id=self.settings.PHOTO_ID_CONNECT_VPN
             )
 
