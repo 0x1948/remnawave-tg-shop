@@ -50,8 +50,8 @@ async def request_trial_confirmation_handler(
     if not verified:
         await callback.message.edit_media(
             media=InputMediaPhoto(media=settings.PHOTO_ID_MAIN_MENU, caption=_(key="text_subscribe_op")),
-            reply_markup=get_connect_and_main_keyboard(
-                current_lang, i18n, settings, settings.REQUIRED_CHANNEL_LINK
+            reply_markup=get_channel_subscription_keyboard(
+                current_lang, i18n, settings.REQUIRED_CHANNEL_LINK
             )
         )
         return
