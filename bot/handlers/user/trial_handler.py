@@ -108,20 +108,11 @@ async def request_trial_confirmation_handler(
             "config_link_not_available"
         )
 
-        traffic_gb_val = activation_result.get(
-            "traffic_gb", settings.TRIAL_TRAFFIC_LIMIT_GB
-        )
-        traffic_display = (
-            f"{traffic_gb_val} GB"
-            if traffic_gb_val and traffic_gb_val > 0
-            else _("traffic_unlimited")
-        )
-
         final_message_text_in_chat = _(
             "payment_trial_successful",
             sub_url=config_link_for_trial
         )
-        photo_id = settings.PHOTO_ID_EXPIRED_24_HOURS
+        photo_id = settings.PHOTO_ID_TEST_ACTIVATED
         
         # Send notification to admin about new trial
         notification_service = NotificationService(callback.bot, settings, i18n)
@@ -270,7 +261,7 @@ async def confirm_activate_trial_handler(
             "payment_trial_successful",
             sub_url=config_link_for_trial
         )
-        photo_id = settings.PHOTO_ID_EXPIRED_24_HOURS
+        photo_id = settings.PHOTO_ID_TEST_ACTIVATED
     else:
         message_key_from_service = (
             activation_result.get("message_key", "trial_activation_failed")

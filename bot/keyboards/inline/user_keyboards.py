@@ -520,13 +520,6 @@ def get_connect_and_main_keyboard(
         builder.row(
             InlineKeyboardButton(text=_("connect_button"), url=config_link)
         )
-    else:
-        builder.row(
-            InlineKeyboardButton(
-                text=_("connect_button"),
-                callback_data="main_action:my_subscription",
-            )
-        )
 
     back_callback = "main_action:back_to_main_keep" if preserve_message else "main_action:back_to_main"
     builder.row(
