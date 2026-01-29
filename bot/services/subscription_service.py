@@ -512,6 +512,41 @@ class SubscriptionService:
                 session, user_id
             )
 
+        if db_user.referred_by_id:
+            if await payment_dal.user_has_successful_payments(session, user_id):
+                bonus_days = 5
+                try:
+                    for_refferer_end_date = await self.extend_active_subscription_days(
+                        session=session,
+                        user_id=db_user.referred_by_id,
+                        bonus_days=bonus_days,
+                        reason=f"Реферальный бонус для {db_user.referred_by_id} за первую оплату реферала {user_id}"
+                    )
+                    await session.commit()
+                    logging.info(
+                        f"Referral bonuses applied: User {db_user.referred_by_id} did payment"
+                        f"Referrer {db_user.referred_by_id} -> {for_refferer_end_date}"
+                    )
+                    try:
+                        _ = lambda key, **kwargs: self.i18n.gettext(db_user.language_code, key, **kwargs)
+                        bonus_notification = _(
+                            "referral_bonus_first_payment_ref",
+                            name=db_user.first_name,
+                            bonus_days=bonus_days
+                        )
+                        await self.bot.send_message(
+                            chat_id=db_user.referred_by_id,
+                            text=bonus_notification
+                        )
+                    except Exception as notify_error:
+                        logging.warning(f"Failed to notify referrer {referred_by_user_id}: {notify_error}")
+                except Exception as bonus_error:
+                    logging.error(
+                        f"Failed to apply referral bonuses for user {user_id} and referrer {referred_by_user_id}: {bonus_error}",
+                        exc_info=True
+                    )
+
+
         sub_payload = {
             "user_id": user_id,
             "panel_user_uuid": panel_user_uuid,

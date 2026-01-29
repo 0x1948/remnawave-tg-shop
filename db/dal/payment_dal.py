@@ -2,7 +2,7 @@ import logging
 from typing import Optional, List, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy import update, func, and_
+from sqlalchemy import update, func, and_, exists
 from sqlalchemy.orm import selectinload
 
 from db.models import Payment, User
@@ -87,6 +87,18 @@ async def get_payment_by_db_id(session: AsyncSession,
     result = await session.execute(stmt)
     return result.scalar_one_or_none()
 
+async def user_has_successful_payments(
+    session: AsyncSession,
+    user_id: int
+) -> bool:
+    stmt = select(
+        exists().where(
+            Payment.user_id == user_id,
+            Payment.status == "succeeded"
+        )
+    )
+    result = await session.execute(stmt)
+    return result.scalar()
 
 async def update_payment_status_by_db_id(
         session: AsyncSession,
