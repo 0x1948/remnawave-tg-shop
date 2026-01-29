@@ -64,10 +64,10 @@ def get_main_menu_inline_keyboard(
 
     #####################
 
-    # referral_button = InlineKeyboardButton(
-    #     text=_(key="menu_referral_inline"),
-    #     callback_data="main_action:referral")
-    # builder.row(referral_button)
+    referral_button = InlineKeyboardButton(
+        text=_(key="menu_referral_inline"),
+        callback_data="main_action:referral")
+    builder.row(referral_button)
 
     builder.row(
         InlineKeyboardButton(

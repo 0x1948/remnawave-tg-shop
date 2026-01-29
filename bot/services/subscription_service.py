@@ -513,7 +513,9 @@ class SubscriptionService:
             )
 
         if db_user.referred_by_id:
-            if await payment_dal.user_has_successful_payments(session, user_id):
+            payment_been = await payment_dal.user_has_successful_payments(session, user_id)
+            logging.info(payment_been)
+            if not payment_been:
                 bonus_days = 5
                 try:
                     for_refferer_end_date = await self.extend_active_subscription_days(
