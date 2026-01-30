@@ -541,10 +541,10 @@ class SubscriptionService:
                             text=bonus_notification
                         )
                     except Exception as notify_error:
-                        logging.warning(f"Failed to notify referrer {referred_by_user_id}: {notify_error}")
+                        logging.warning(f"Failed to notify referrer {db_user.referred_by_id}: {notify_error}")
                 except Exception as bonus_error:
                     logging.error(
-                        f"Failed to apply referral bonuses for user {user_id} and referrer {referred_by_user_id}: {bonus_error}",
+                        f"Failed to apply referral bonuses for user {user_id} and referrer {db_user.referred_by_id}: {bonus_error}",
                         exc_info=True
                     )
 
