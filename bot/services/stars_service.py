@@ -154,13 +154,13 @@ class StarsService:
                 f"Failed to activate subscription after stars payment for user {message.from_user.id}")
             return
 
-        referral_bonus = await self.referral_service.apply_referral_bonuses_for_payment(
-            session,
-            message.from_user.id,
-            months,
-            current_payment_db_id=payment_db_id,
-            skip_if_active_before_payment=False,
-        )
+        # referral_bonus = await self.referral_service.apply_referral_bonuses_for_payment(
+        #     session,
+        #     message.from_user.id,
+        #     months,
+        #     current_payment_db_id=payment_db_id,
+        #     skip_if_active_before_payment=False,
+        # )
         await session.commit()
 
         applied_days = referral_bonus.get("referee_bonus_applied_days") if referral_bonus else None
