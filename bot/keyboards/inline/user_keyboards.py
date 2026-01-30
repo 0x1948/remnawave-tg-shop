@@ -419,10 +419,8 @@ def get_connect_help_url(lang: str, i18n_instance, settings: Settings) -> Inline
     builder = InlineKeyboardBuilder()
     if settings.SUBSCRIPTION_MINI_APP_URL:
         builder.button(
-            InlineKeyboardButton(
-                text=_("connect_button"),
-                web_app=WebAppInfo(url=settings.SUBSCRIPTION_MINI_APP_URL),
-            )
+            text=_("connect_button"),
+            web_app=WebAppInfo(url=settings.SUBSCRIPTION_MINI_APP_URL),
         )
     builder.button(
         text=_(key="button_help_text"),

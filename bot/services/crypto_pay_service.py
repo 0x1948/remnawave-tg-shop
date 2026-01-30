@@ -222,37 +222,13 @@ class CryptoPayService:
             config_link = activation.get("subscription_url") or _("config_link_not_available")
             final_end = activation.get("end_date")
             days_left = (final_end.date() - datetime.now().date()).days if final_end else 0
-            applied_days = 0
-            pay_succesful = False
-            if referral_bonus and referral_bonus.get("referee_new_end_date"):
-                final_end = referral_bonus["referee_new_end_date"]
-                applied_days = referral_bonus.get("referee_bonus_applied_days", 0)
-
-            if applied_days:
-                inviter_name_display = _("friend_placeholder")
-                if db_user and db_user.referred_by_id:
-                    inviter = await user_dal.get_user_by_id(session, db_user.referred_by_id)
-                    if inviter:
-                        safe_name = sanitize_display_name(inviter.first_name) if inviter.first_name else None
-                        if safe_name:
-                            inviter_name_display = safe_name
-                        elif inviter.username:
-                            inviter_name_display = username_for_display(inviter.username, with_at=False)
-                text = _("payment_successful_with_referral_bonus_full",
-                         months=months,
-                         base_end_date=activation["end_date"].strftime('%Y-%m-%d'),
-                         bonus_days=applied_days,
-                         final_end_date=final_end.strftime('%d0-%m-%Y %H:%M'),
-                         inviter_name=inviter_name_display,
-                         config_link=config_link)
-            else:
-                pay_succesful = True
-                text = _(
-                    "payment_successful_full",
-                    date=final_end.strftime('%d0-%m-%Y %H:%M'),
-                    period=max(0, days_left),
-                    sub_url=config_link
-                )
+            pay_succesful = True
+            text = _(
+                "payment_successful_full",
+                date=final_end.strftime('%d0-%m-%Y %H:%M'),
+                period=max(0, days_left),
+                sub_url=config_link
+            )
 
             markup = get_connect_and_main_keyboard(
                 lang, i18n, settings, config_link, preserve_message=True
