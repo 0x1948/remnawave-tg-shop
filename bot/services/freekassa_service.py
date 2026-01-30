@@ -335,32 +335,12 @@ class FreeKassaService:
             else:
                 end_date_str = _("config_link_not_available")
 
-            if applied_days:
-                inviter_name_display = _("friend_placeholder")
-                if db_user and db_user.referred_by_id:
-                    inviter = await user_dal.get_user_by_id(session, db_user.referred_by_id)
-                    if inviter:
-                        safe_name = sanitize_display_name(inviter.first_name) if inviter.first_name else None
-                        if safe_name:
-                            inviter_name_display = safe_name
-                        elif inviter.username:
-                            inviter_name_display = username_for_display(inviter.username, with_at=False)
-                text = _(
-                    "payment_successful_with_referral_bonus_full",
-                    months=months,
-                    base_end_date=activation["end_date"].strftime("%Y-%m-%d") if activation and activation.get("end_date") else end_date_str,
-                    bonus_days=applied_days,
-                    final_end_date=end_date_str,
-                    inviter_name=inviter_name_display,
-                    config_link=config_link,
-                )
-            else:
-                text = _(
-                    "payment_successful_full",
-                    months=months,
-                    end_date=end_date_str,
-                    config_link=config_link,
-                )
+            text = _(
+                "payment_successful_full",
+                months=months,
+                end_date=end_date_str,
+                config_link=config_link,
+            )
             if provider_payment_id:
                 order_info_text = _(
                     "free_kassa_order_full",

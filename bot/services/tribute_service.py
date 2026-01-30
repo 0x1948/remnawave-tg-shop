@@ -170,43 +170,39 @@ class TributeService:
                 lang = db_user.language_code if db_user and db_user.language_code else settings.DEFAULT_LANGUAGE
                 _ = lambda k, **kw: i18n.gettext(lang, k, **kw)
 
-                applied_ref_days = referral_bonus.get('referee_bonus_applied_days') if referral_bonus else None
-                final_end = (referral_bonus.get('referee_new_end_date')
-                             if referral_bonus else None)
-                if not final_end:
-                    final_end = activation_details.get('end_date')
+                final_end = activation_details.get('end_date')
 
                 if final_end:
                     config_link = activation_details.get("subscription_url") or _(
                         "config_link_not_available"
                     )
 
-                    if applied_ref_days:
-                        inviter_name_display = _('friend_placeholder')
-                        if db_user and db_user.referred_by_id:
-                            inviter = await user_dal.get_user_by_id(session, db_user.referred_by_id)
-                            if inviter:
-                                safe_name = sanitize_display_name(inviter.first_name) if inviter.first_name else None
-                                if safe_name:
-                                    inviter_name_display = safe_name
-                                elif inviter.username:
-                                    inviter_name_display = username_for_display(inviter.username, with_at=False)
-                        success_msg = _(
-                            "payment_successful_with_referral_bonus_full",
-                            months=months,
-                            base_end_date=activation_details["end_date"].strftime('%Y-%m-%d'),
-                            bonus_days=applied_ref_days,
-                            final_end_date=final_end.strftime('%d0-%m-%Y %H:%M'),
-                            inviter_name=inviter_name_display,
-                            config_link=config_link,
-                        )
-                    else:
-                        success_msg = _(
-                            "payment_successful_full",
-                            months=months,
-                            end_date=final_end.strftime('%d0-%m-%Y %H:%M'),
-                            config_link=config_link,
-                        )
+                    # if applied_ref_days:
+                    #     inviter_name_display = _('friend_placeholder')
+                    #     if db_user and db_user.referred_by_id:
+                    #         inviter = await user_dal.get_user_by_id(session, db_user.referred_by_id)
+                    #         if inviter:
+                    #             safe_name = sanitize_display_name(inviter.first_name) if inviter.first_name else None
+                    #             if safe_name:
+                    #                 inviter_name_display = safe_name
+                    #             elif inviter.username:
+                    #                 inviter_name_display = username_for_display(inviter.username, with_at=False)
+                    #     success_msg = _(
+                    #         "payment_successful_with_referral_bonus_full",
+                    #         months=months,
+                    #         base_end_date=activation_details["end_date"].strftime('%Y-%m-%d'),
+                    #         bonus_days=applied_ref_days,
+                    #         final_end_date=final_end.strftime('%d0-%m-%Y %H:%M'),
+                    #         inviter_name=inviter_name_display,
+                    #         config_link=config_link,
+                    #     )
+                    # else:
+                    success_msg = _(
+                        "payment_successful_full",
+                        months=months,
+                        end_date=final_end.strftime('%d0-%m-%Y %H:%M'),
+                        config_link=config_link,
+                    )
                     markup = get_connect_and_main_keyboard(
                         lang,
                         i18n,
