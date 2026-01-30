@@ -92,13 +92,14 @@ async def user_has_successful_payments(
     user_id: int
 ) -> bool:
     stmt = select(
-        exists().where(
-            Payment.user_id == user_id,
-            Payment.status == "succeeded"
-        )
+        func.count(Payment.payment_id)
+    ).where(
+        Payment.user_id == user_id,
+        Payment.status == "succeeded"
     )
+
     result = await session.execute(stmt)
-    return result.scalar()
+    return result.scalar() > 1
 
 async def update_payment_status_by_db_id(
         session: AsyncSession,
