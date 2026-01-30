@@ -294,14 +294,14 @@ class FreeKassaService:
                     payment.payment_id,
                     provider="freekassa",
                 )
-
-                referral_bonus = await self.referral_service.apply_referral_bonuses_for_payment(
-                    session,
-                    payment.user_id,
-                    months,
-                    current_payment_db_id=payment.payment_id,
-                    skip_if_active_before_payment=False,
-                )
+                #
+                # referral_bonus = await self.referral_service.apply_referral_bonuses_for_payment(
+                #     session,
+                #     payment.user_id,
+                #     months,
+                #     current_payment_db_id=payment.payment_id,
+                #     skip_if_active_before_payment=False,
+                # )
 
                 await session.commit()
             except Exception as e:
